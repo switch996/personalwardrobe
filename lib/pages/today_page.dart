@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../design/ds.dart';
 import '../design/widgets.dart';
-import '../pages/closet_page.dart';
 import '../pages/outfit_detail_page.dart';
+import '../pages/virtual_closet_page.dart';
 import '../sheets/outfit_editor_sheet.dart';
 import '../store/local_store.dart';
 
@@ -57,7 +57,7 @@ class TodayPage extends StatelessWidget {
                   onTap: () async {
                     await Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (_) => ClosetPage(
+                        builder: (_) => VirtualClosetPage(
                           store: store,
                           refresh: refresh,
                           onRefresh: onRefresh,

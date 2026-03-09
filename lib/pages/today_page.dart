@@ -43,7 +43,6 @@ class TodayPage extends StatelessWidget {
                 _HeroCard(
                   imagePath: coverPath,
                   height: heroHeight.clamp(360, 560).toDouble(),
-                  hasTodayRecord: todayEntries.isNotEmpty,
                   onCameraTap: () async {
                     final changed = await showOutfitEditorSheet(
                       context,
@@ -154,13 +153,11 @@ class _HeroCard extends StatelessWidget {
   const _HeroCard({
     required this.imagePath,
     required this.height,
-    required this.hasTodayRecord,
     required this.onCameraTap,
   });
 
   final String imagePath;
   final double height;
-  final bool hasTodayRecord;
   final VoidCallback onCameraTap;
 
   @override
@@ -185,49 +182,6 @@ class _HeroCard extends StatelessWidget {
                   width: double.infinity,
                   height: double.infinity,
                 ),
-              ),
-            ),
-          ),
-          Positioned(
-            left: 18,
-            bottom: 20,
-            child: Container(
-              width: 230,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xE6F4F0EC),
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    '今日推荐',
-                    style: TextStyle(
-                      color: Color(0xFFF07E29),
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    hasTodayRecord ? '今日已记录穿搭' : '简约都市风',
-                    style: const TextStyle(
-                      color: DsColors.ink,
-                      fontSize: 40 / 2,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  const Text(
-                    '适合今日职场与约会',
-                    style: TextStyle(
-                      color: Color(0xFF6A7A93),
-                      fontSize: 16 / 1.3,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
               ),
             ),
           ),
@@ -353,9 +307,9 @@ class _WeekSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
-    final start = DateTime(now.year, now.month, now.day - (now.weekday - 1));
+    final start = DateTime(now.year, now.month, now.day - 3);
     final days = List<DateTime>.generate(
-      5,
+      7,
       (index) => DateTime(start.year, start.month, start.day + index),
     );
 
@@ -391,35 +345,34 @@ class _WeekSection extends StatelessWidget {
           ],
         ),
         const SizedBox(height: DsSpace.sm),
-        SizedBox(
-          height: 124,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: days.length,
-            separatorBuilder: (context, index) => const SizedBox(width: 10),
-            itemBuilder: (context, index) {
-              final day = days[index];
-              final entries = store.outfitsOn(day);
-              return _WeekDayCard(
-                day: day,
-                isToday: _isSameDay(day, now),
-                hasRecord: entries.isNotEmpty,
-                onTap: () async {
-                  if (entries.isEmpty) return;
-                  await Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => OutfitDetailPage(
-                        entryId: entries.first.id,
-                        store: store,
-                        refresh: refresh,
-                        onRefresh: onRefresh,
+        Row(
+          children: List<Widget>.generate(days.length, (index) {
+            final day = days[index];
+            final entries = store.outfitsOn(day);
+            return Expanded(
+              child: Padding(
+                padding: EdgeInsets.only(right: index == days.length - 1 ? 0 : 6),
+                child: _WeekDayCard(
+                  day: day,
+                  isToday: _isSameDay(day, now),
+                  hasRecord: entries.isNotEmpty,
+                  onTap: () async {
+                    if (entries.isEmpty) return;
+                    await Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => OutfitDetailPage(
+                          entryId: entries.first.id,
+                          store: store,
+                          refresh: refresh,
+                          onRefresh: onRefresh,
+                        ),
                       ),
-                    ),
-                  );
-                },
-              );
-            },
-          ),
+                    );
+                  },
+                ),
+              ),
+            );
+          }),
         ),
       ],
     );
@@ -446,14 +399,14 @@ class _WeekDayCard extends StatelessWidget {
     final outlined = isToday && !hasRecord;
 
     return InkWell(
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(14),
       onTap: onTap,
       child: Container(
-        width: 102,
+        height: 82,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(14),
           color: selected ? const Color(0xFFF8660A) : const Color(0xFFF1F3F5),
-          border: outlined ? Border.all(color: const Color(0xFFF8660A), width: 2) : null,
+          border: outlined ? Border.all(color: const Color(0xFFF8660A), width: 1.6) : null,
           boxShadow: selected
               ? const [
                   BoxShadow(
@@ -464,30 +417,30 @@ class _WeekDayCard extends StatelessWidget {
                 ]
               : null,
         ),
-        padding: const EdgeInsets.symmetric(vertical: 10),
+        padding: const EdgeInsets.symmetric(vertical: 7),
         child: Column(
           children: [
             Text(
               dayLabel,
               style: TextStyle(
                 color: selected ? Colors.white : const Color(0xFF97A6BA),
-                fontSize: 15,
+                fontSize: 11,
                 fontWeight: FontWeight.w700,
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 1),
             Text(
               '${day.day}',
               style: TextStyle(
                 color: selected ? Colors.white : DsColors.ink,
-                fontSize: 34 / 2,
+                fontSize: 13,
                 fontWeight: FontWeight.w800,
               ),
             ),
-            const Spacer(),
+            const SizedBox(height: 4),
             Container(
-              width: 30,
-              height: 30,
+              width: 18,
+              height: 18,
               decoration: BoxDecoration(
                 color: selected
                     ? const Color(0x33FFFFFF)
@@ -496,7 +449,7 @@ class _WeekDayCard extends StatelessWidget {
               ),
               child: Icon(
                 hasRecord ? Icons.check : Icons.add,
-                size: 18,
+                size: 12,
                 color: selected
                     ? Colors.white
                     : (hasRecord ? const Color(0xFFF8660A) : const Color(0xFFAAB4C4)),

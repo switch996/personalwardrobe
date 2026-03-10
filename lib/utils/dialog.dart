@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 Future<bool> confirmDialog(
   BuildContext context, {
@@ -14,11 +14,11 @@ Future<bool> confirmDialog(
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: const Text('取消'),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Confirm'),
+            child: const Text('确认'),
           ),
         ],
       );
@@ -46,11 +46,11 @@ Future<String?> inputDialog(
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: const Text('取消'),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(controller.text.trim()),
-            child: const Text('OK'),
+            child: const Text('确认'),
           ),
         ],
       );
@@ -64,3 +64,4 @@ void showSnack(BuildContext context, String text) {
   if (!context.mounted) return;
   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
 }
+

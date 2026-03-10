@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import '../design/ds.dart';
 import '../design/widgets.dart';
@@ -27,13 +27,13 @@ class ClosetItemDetailPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final item = store.closet.where((e) => e.id == itemId).firstOrNull;
     if (item == null) {
-      return const Scaffold(body: Center(child: Text('Closet item not found.')));
+      return const Scaffold(body: Center(child: Text('未找到该单品')));
     }
     final usedBy = store.outfitsUsingItem(item.id);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Closet Item Detail'),
+        title: const Text('单品详情'),
         actions: [
           IconButton(
             icon: const Icon(Icons.edit_outlined),
@@ -47,8 +47,8 @@ class ClosetItemDetailPage extends StatelessWidget {
             onPressed: () async {
               final ok = await confirmDialog(
                 context,
-                title: 'Delete',
-                message: 'Delete this item and unlink from outfits?',
+                title: '确认删除',
+                message: '删除后也会取消与穿搭的关联，确定继续？',
               );
               if (!ok) return;
               await store.deleteClosetItem(item.id);
@@ -65,10 +65,10 @@ class ClosetItemDetailPage extends StatelessWidget {
           const SizedBox(height: DsSpace.md),
           _metaCard(item, context),
           const SizedBox(height: DsSpace.md),
-          const SectionTitle('Used in Outfits'),
+          const SectionTitle('使用记录'),
           const SizedBox(height: DsSpace.sm),
           if (usedBy.isEmpty)
-            const EmptyState(title: 'Not used yet', caption: 'Link this item when recording an outfit.')
+            const EmptyState(title: '尚未被穿搭使用', caption: '在穿搭记录中关联后即可显示')
           else
             ...usedBy.map(
               (entry) => Padding(
@@ -100,7 +100,7 @@ class ClosetItemDetailPage extends StatelessWidget {
                               Text(ymd(entry.date), style: Theme.of(context).textTheme.bodySmall),
                               const SizedBox(height: 4),
                               Text(
-                                entry.note.isEmpty ? '(no note)' : entry.note,
+                                entry.note.isEmpty ? '（暂无备注）' : entry.note,
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -125,9 +125,11 @@ class ClosetItemDetailPage extends StatelessWidget {
         children: [
           Text(item.name, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 6),
-          Text('Category: ${item.category}'),
-          if (item.brand.isNotEmpty) Text('Brand: ${item.brand}'),
-          if (item.color.isNotEmpty) Text('Color: ${item.color}'),
+          Text('分类：${LocalStore.categoryLabel(item.category)}'),
+          if (item.subCategory.isNotEmpty) Text('子分类：${item.subCategory}'),
+          Text(item.price <= 0 ? '价格：未填写' : '价格：¥${item.price.toStringAsFixed(0)}'),
+          if (item.brand.isNotEmpty) Text('品牌：${item.brand}'),
+          if (item.color.isNotEmpty) Text('颜色：${item.color}'),
           if (item.note.isNotEmpty) ...[
             const SizedBox(height: 8),
             Text(item.note),

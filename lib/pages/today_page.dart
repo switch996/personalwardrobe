@@ -1,11 +1,13 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import '../design/ds.dart';
 import '../design/widgets.dart';
+import '../models/outfit_entry.dart';
 import '../pages/outfit_detail_page.dart';
 import '../pages/virtual_closet_page.dart';
 import '../sheets/outfit_editor_sheet.dart';
 import '../store/local_store.dart';
+import '../utils/date.dart';
 
 class TodayPage extends StatelessWidget {
   const TodayPage({
@@ -23,7 +25,7 @@ class TodayPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return ValueListenableBuilder<int>(
       valueListenable: refresh,
-      builder: (context, _, __) {
+      builder: (context, value, child) {
         final now = DateTime.now();
         final todays = store.outfitsOn(now);
         final heroImage = todays.isNotEmpty
@@ -42,14 +44,7 @@ class TodayPage extends StatelessWidget {
                 _HeroCard(
                   imagePath: heroImage,
                   height: heroHeight.clamp(360, 560).toDouble(),
-                  onCameraTap: () async {
-                    final changed = await showOutfitEditorSheet(
-                      context,
-                      store: store,
-                      initialDate: now,
-                    );
-                    if (changed == true) onRefresh();
-                  },
+                  onCameraTap: () => _openEditor(context, now),
                 ),
                 const SizedBox(height: DsSpace.md),
                 _ClosetBanner(
@@ -65,18 +60,31 @@ class TodayPage extends StatelessWidget {
                     );
                   },
                 ),
-                const SizedBox(height: DsSpace.md),
-                _WeekSection(
-                  store: store,
-                  refresh: refresh,
-                  onRefresh: onRefresh,
-                ),
+                if (store.outfits.isNotEmpty) ...[
+                  _RecentStrip(
+                    outfits: store.outfits.take(10).toList(),
+                    store: store,
+                    refresh: refresh,
+                    onRefresh: onRefresh,
+                  ),
+                  const SizedBox(height: DsSpace.md),
+                ],
+                _WeekSection(StoreSnapshot(store: store, refresh: refresh, onRefresh: onRefresh)),
               ],
             ),
           ),
         );
       },
     );
+  }
+
+  Future<void> _openEditor(BuildContext context, DateTime date) async {
+    final changed = await showOutfitEditorSheet(
+      context,
+      store: store,
+      initialDate: date,
+    );
+    if (changed == true) onRefresh();
   }
 }
 
@@ -104,13 +112,13 @@ class _HeaderRow extends StatelessWidget {
               const SizedBox(height: 6),
               const Row(
                 children: [
-                  Icon(Icons.wb_sunny_rounded, color: Color(0xFFF45E06), size: 26),
+                  Icon(Icons.wb_sunny_rounded, color: Color(0xFFF45E06), size: 24),
                   SizedBox(width: 4),
                   Text(
-                    '晴 24°C',
+                    '晴 24℃',
                     style: TextStyle(
                       color: Color(0xFFF45E06),
-                      fontSize: 20,
+                      fontSize: 18,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -120,8 +128,8 @@ class _HeaderRow extends StatelessWidget {
           ),
         ),
         Container(
-          width: 66,
-          height: 66,
+          width: 56,
+          height: 56,
           decoration: BoxDecoration(
             color: const Color(0xFFF1F3F4),
             shape: BoxShape.circle,
@@ -137,7 +145,7 @@ class _HeaderRow extends StatelessWidget {
           child: IconButton(
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('通知中心敬请期待')),
+                const SnackBar(content: Text('通知中心即将开放')),
               );
             },
             icon: const Icon(Icons.notifications, color: Color(0xFF334A66)),
@@ -266,7 +274,7 @@ class _ClosetBanner extends StatelessWidget {
                   ),
                   SizedBox(height: 4),
                   Text(
-                    '管理您的个人时尚收藏',
+                    '管理你的个人时尚收藏',
                     style: TextStyle(
                       color: Color(0xFFD0D7E3),
                       fontSize: 16,
@@ -292,16 +300,78 @@ class _ClosetBanner extends StatelessWidget {
   }
 }
 
-class _WeekSection extends StatelessWidget {
-  const _WeekSection({
+class _RecentStrip extends StatelessWidget {
+  const _RecentStrip({
+    required this.outfits,
     required this.store,
     required this.refresh,
     required this.onRefresh,
   });
 
+  final List<OutfitEntry> outfits;
   final LocalStore store;
   final ValueNotifier<int> refresh;
   final VoidCallback onRefresh;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SectionTitle('最近十次穿搭'),
+        const SizedBox(height: DsSpace.sm),
+        SizedBox(
+          height: 96,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: outfits.length,
+            separatorBuilder: (context, _) => const SizedBox(width: 10),
+            itemBuilder: (context, index) {
+              final entry = outfits[index];
+              return GestureDetector(
+                onTap: () async {
+                  await Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => OutfitDetailPage(
+                        entryId: entry.id,
+                        store: store,
+                        refresh: refresh,
+                        onRefresh: onRefresh,
+                      ),
+                    ),
+                  );
+                },
+                child: Column(
+                  children: [
+                    AppImage(path: entry.imagePath, width: 72, height: 72, radius: BorderRadius.circular(18)),
+                    const SizedBox(height: 4),
+                    Text(
+                      md(entry.date),
+                      style: const TextStyle(fontSize: 11, color: DsColors.mutedInk),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class StoreSnapshot {
+  const StoreSnapshot({required this.store, required this.refresh, required this.onRefresh});
+
+  final LocalStore store;
+  final ValueNotifier<int> refresh;
+  final VoidCallback onRefresh;
+}
+
+class _WeekSection extends StatelessWidget {
+  const _WeekSection(this.snapshot);
+
+  final StoreSnapshot snapshot;
 
   @override
   Widget build(BuildContext context) {
@@ -326,14 +396,14 @@ class _WeekSection extends StatelessWidget {
             TextButton(
               onPressed: () {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('请切到 Diary 查看全部记录')),
+                  const SnackBar(content: Text('切换到“日历”页查看全部记录')),
                 );
               },
               child: const Text(
                 '查看全部',
                 style: TextStyle(
                   color: Color(0xFFF45E06),
-                  fontSize: 17,
+                  fontSize: 16,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -344,7 +414,7 @@ class _WeekSection extends StatelessWidget {
         Row(
           children: List<Widget>.generate(days.length, (index) {
             final day = days[index];
-            final entries = store.outfitsOn(day);
+            final entries = snapshot.store.outfitsOn(day);
             return Expanded(
               child: Padding(
                 padding: EdgeInsets.only(right: index == days.length - 1 ? 0 : 6),
@@ -358,9 +428,9 @@ class _WeekSection extends StatelessWidget {
                       MaterialPageRoute(
                         builder: (_) => OutfitDetailPage(
                           entryId: entries.first.id,
-                          store: store,
-                          refresh: refresh,
-                          onRefresh: onRefresh,
+                          store: snapshot.store,
+                          refresh: snapshot.refresh,
+                          onRefresh: snapshot.onRefresh,
                         ),
                       ),
                     );
@@ -398,11 +468,11 @@ class _WeekDayCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(14),
       onTap: onTap,
       child: Container(
-        height: 82,
+        height: 72,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(14),
           color: selected ? const Color(0xFFF8660A) : const Color(0xFFF1F3F5),
-          border: outlined ? Border.all(color: const Color(0xFFF8660A), width: 1.6) : null,
+          border: outlined ? Border.all(color: const Color(0xFFF8660A), width: 1.3) : null,
           boxShadow: selected
               ? const [
                   BoxShadow(
@@ -413,7 +483,7 @@ class _WeekDayCard extends StatelessWidget {
                 ]
               : null,
         ),
-        padding: const EdgeInsets.symmetric(vertical: 7),
+        padding: const EdgeInsets.symmetric(vertical: 6),
         child: Column(
           children: [
             Text(
@@ -433,7 +503,7 @@ class _WeekDayCard extends StatelessWidget {
                 fontWeight: FontWeight.w800,
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 2),
             Container(
               width: 18,
               height: 18,

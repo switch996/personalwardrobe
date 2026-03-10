@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 String ymd(DateTime date) {
   final y = date.year.toString().padLeft(4, '0');
@@ -7,11 +7,7 @@ String ymd(DateTime date) {
   return '$y-$m-$d';
 }
 
-String md(DateTime date) {
-  final m = date.month.toString().padLeft(2, '0');
-  final d = date.day.toString().padLeft(2, '0');
-  return '$m/$d';
-}
+String md(DateTime date) => '${date.month}月${date.day}日';
 
 bool isSameDay(DateTime a, DateTime b) {
   return a.year == b.year && a.month == b.month && a.day == b.day;
@@ -25,11 +21,9 @@ int monthDays(DateTime value) => monthEnd(value).day;
 
 DateTime addMonth(DateTime value, int delta) => DateTime(value.year, value.month + delta, 1);
 
-String monthLabel(DateTime date) {
-  return '${date.year}-${date.month.toString().padLeft(2, '0')}';
-}
+String monthLabel(DateTime date) => '${date.year}年${date.month}月';
 
 List<Widget> weekdayHeaders(TextStyle? style) {
-  const labels = <String>['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const labels = <String>['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
   return labels.map((e) => Center(child: Text(e, style: style))).toList();
 }

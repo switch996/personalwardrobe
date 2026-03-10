@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import '../design/ds.dart';
 import '../design/widgets.dart';
@@ -23,7 +23,7 @@ class MePage extends StatelessWidget {
         }
 
         return AppScaffold(
-          title: 'Me',
+          title: '我的',
           body: ListView(
             padding: const EdgeInsets.all(DsSpace.md),
             children: [
@@ -33,23 +33,23 @@ class MePage extends StatelessWidget {
                     backgroundColor: DsColors.paperDeep,
                     child: Icon(Icons.person_outline, color: DsColors.copper),
                   ),
-                  title: Text('Personal Wardrobe'),
-                  subtitle: Text('V1 local diary'),
+                  title: Text('衣橱日记'),
+                  subtitle: Text('本地版 V1'),
                 ),
               ),
               const SizedBox(height: DsSpace.md),
               PaperCard(
                 child: Column(
                   children: [
-                    _statLine('Outfit records', '$outfitCount'),
-                    _statLine('Closet items', '$closetCount'),
-                    _statLine('Tag types used', '${tags.length}'),
+                    _statLine('穿搭记录', '$outfitCount'),
+                    _statLine('衣橱单品', '$closetCount'),
+                    _statLine('使用过的标签', '${tags.length}'),
                   ],
                 ),
               ),
               const SizedBox(height: DsSpace.md),
               const PaperCard(
-                child: Text('Storage: local JSON + copied images under app_documents folder.'),
+                child: Text('存储方式：本地 JSON + app_documents 目录中的图片原图。'),
               ),
             ],
           ),

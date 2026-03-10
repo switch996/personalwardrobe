@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
@@ -9,13 +9,13 @@ import '../utils/date.dart';
 
 class LocalStore {
   static const List<String> outfitTagPresets = <String>[
-    'Work',
-    'Casual',
-    'Date',
-    'Travel',
-    'Vintage',
-    'Street',
-    'Formal',
+    '通勤',
+    '约会',
+    '休闲',
+    '运动',
+    '度假',
+    '聚会',
+    '极简',
   ];
 
   static const List<String> closetCategories = <String>[
@@ -27,6 +27,34 @@ class LocalStore {
     'dress',
     'bag',
   ];
+
+  static const Map<String, String> closetCategoryLabels = <String, String>{
+    'top': '上装',
+    'bottom': '下装',
+    'shoes': '鞋子',
+    'accessory': '配饰',
+    'outerwear': '外套',
+    'dress': '连衣裙',
+    'bag': '包袋',
+  };
+
+  static const Map<String, List<String>> closetSubCategories = <String, List<String>>{
+    'top': ['长袖', '短袖', 'T恤', '衬衫'],
+    'bottom': ['长裤', '短裤', '半身裙', '牛仔'],
+    'shoes': ['运动鞋', '乐福鞋', '高跟鞋', '靴子'],
+    'accessory': ['项链', '耳饰', '帽子', '腰带'],
+    'outerwear': ['风衣', '西装', '大衣', '披肩'],
+    'dress': ['连衣裙', '半裙', '礼服'],
+    'bag': ['手提包', '斜挎包', '托特包', '双肩包'],
+  };
+
+  static String categoryLabel(String category) {
+    return closetCategoryLabels[category] ?? category;
+  }
+
+  static List<String> subCategoryOptions(String category) {
+    return closetSubCategories[category] ?? const <String>[];
+  }
 
   final List<OutfitEntry> outfits = <OutfitEntry>[];
   final List<ClosetItem> closet = <ClosetItem>[];
@@ -45,19 +73,42 @@ class LocalStore {
   }
 
   Future<Directory> _ensureRoot() async {
-    Directory parent;
+    Directory base = await _documentsBase();
     try {
-      parent = await getApplicationDocumentsDirectory();
-    } on MissingPlatformDirectoryException {
-      parent = Directory.systemTemp;
-    }
-    final base = Directory('${parent.path}${Platform.pathSeparator}app_documents');
-    if (!await base.exists()) {
       await base.create(recursive: true);
+    } on FileSystemException {
+      final fallback = Directory('${Directory.systemTemp.path}${Platform.pathSeparator}app_documents');
+      await fallback.create(recursive: true);
+      base = fallback;
     }
+
     await Directory('${base.path}${Platform.pathSeparator}outfit_images').create(recursive: true);
     await Directory('${base.path}${Platform.pathSeparator}closet_images').create(recursive: true);
     return base;
+  }
+
+  Future<Directory> _documentsBase() async {
+    Directory? parent;
+    try {
+      parent = await getApplicationDocumentsDirectory();
+    } on MissingPlatformDirectoryException {
+      parent = null;
+    }
+
+    parent ??= await getTemporaryDirectory();
+    if (_isInvalidPath(parent.path)) {
+      parent = Directory.systemTemp;
+    }
+
+    final normalized = parent.path.endsWith(Platform.pathSeparator)
+        ? parent.path.substring(0, parent.path.length - 1)
+        : parent.path;
+    return Directory('$normalized${Platform.pathSeparator}app_documents');
+  }
+
+  bool _isInvalidPath(String path) {
+    final trimmed = path.trim();
+    return trimmed.isEmpty || trimmed == '/' || trimmed == '\\';
   }
 
   File get _outfitsFile => File('${_root!.path}${Platform.pathSeparator}outfits.json');
@@ -157,9 +208,11 @@ class LocalStore {
     required String imageSourcePath,
     required String name,
     required String category,
+    required String subCategory,
     required String brand,
     required String color,
     required String note,
+    required double price,
   }) async {
     var imagePath = existing?.imagePath ?? '';
     if (imageSourcePath.trim().isNotEmpty && imageSourcePath.trim() != imagePath) {
@@ -171,9 +224,11 @@ class LocalStore {
       imagePath: imagePath,
       name: name.trim(),
       category: category,
+      subCategory: subCategory,
       brand: brand.trim(),
       color: color.trim(),
       note: note.trim(),
+      price: price,
       createdAt: existing?.createdAt ?? DateTime.now(),
     );
 

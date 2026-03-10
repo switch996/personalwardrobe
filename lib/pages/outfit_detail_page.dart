@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import '../design/ds.dart';
 import '../design/widgets.dart';
@@ -26,14 +26,14 @@ class OutfitDetailPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final entry = store.outfits.where((e) => e.id == entryId).firstOrNull;
     if (entry == null) {
-      return const Scaffold(body: Center(child: Text('Outfit not found.')));
+      return const Scaffold(body: Center(child: Text('未找到该穿搭')));
     }
 
     final relatedItems = store.closet.where((c) => entry.closetItemIds.contains(c.id)).toList();
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Outfit Detail'),
+        title: const Text('穿搭详情'),
         actions: [
           IconButton(
             icon: const Icon(Icons.edit_outlined),
@@ -52,8 +52,8 @@ class OutfitDetailPage extends StatelessWidget {
             onPressed: () async {
               final ok = await confirmDialog(
                 context,
-                title: 'Delete',
-                message: 'Delete this outfit record?',
+                title: '确认删除',
+                message: '确定要删除这条穿搭记录吗？',
               );
               if (!ok) return;
               await store.deleteOutfit(entry.id);
@@ -74,7 +74,7 @@ class OutfitDetailPage extends StatelessWidget {
               children: [
                 Text(ymd(entry.date), style: Theme.of(context).textTheme.bodySmall),
                 const SizedBox(height: 8),
-                Text(entry.note.isEmpty ? '(no note)' : entry.note),
+                Text(entry.note.isEmpty ? '（暂无备注）' : entry.note),
                 const SizedBox(height: 10),
                 Wrap(
                   spacing: 6,
@@ -85,10 +85,10 @@ class OutfitDetailPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: DsSpace.md),
-          const SectionTitle('Related Closet Items'),
+          const SectionTitle('关联的衣橱单品'),
           const SizedBox(height: DsSpace.sm),
           if (relatedItems.isEmpty)
-            const EmptyState(title: 'No linked item', caption: 'Edit this record to link closet items.')
+            const EmptyState(title: '暂无关联单品', caption: '编辑后可绑定衣橱单品')
           else
             ...relatedItems.map((item) => _relatedItemCard(context, item)),
         ],
@@ -110,7 +110,9 @@ class OutfitDetailPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(item.name, style: Theme.of(context).textTheme.titleMedium),
-                  Text(item.category, style: Theme.of(context).textTheme.bodySmall),
+                  Text(LocalStore.categoryLabel(item.category), style: Theme.of(context).textTheme.bodySmall),
+                  if (item.subCategory.isNotEmpty)
+                    Text(item.subCategory, style: Theme.of(context).textTheme.bodySmall),
                 ],
               ),
             ),

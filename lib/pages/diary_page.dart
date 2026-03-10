@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import '../design/ds.dart';
 import '../design/widgets.dart';
@@ -36,27 +36,21 @@ class _DiaryPageState extends State<DiaryPage> {
         final dayEntries = widget.store.outfitsOn(_selectedDay);
 
         return AppScaffold(
-          title: 'Diary',
+          title: '日历',
           body: ListView(
             padding: const EdgeInsets.all(DsSpace.md),
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: SegmentedButton<bool>(
-                      segments: const [
-                        ButtonSegment<bool>(value: true, label: Text('Calendar')),
-                        ButtonSegment<bool>(value: false, label: Text('Timeline')),
-                      ],
-                      selected: <bool>{_calendarMode},
-                      onSelectionChanged: (values) {
-                        setState(() {
-                          _calendarMode = values.first;
-                        });
-                      },
-                    ),
-                  ),
+              SegmentedButton<bool>(
+                segments: const [
+                  ButtonSegment<bool>(value: true, label: Text('月历视图')),
+                  ButtonSegment<bool>(value: false, label: Text('时间线')),
                 ],
+                selected: <bool>{_calendarMode},
+                onSelectionChanged: (values) {
+                  setState(() {
+                    _calendarMode = values.first;
+                  });
+                },
               ),
               const SizedBox(height: DsSpace.md),
               if (_calendarMode) ...[
@@ -81,10 +75,10 @@ class _DiaryPageState extends State<DiaryPage> {
                   },
                 ),
                 const SizedBox(height: DsSpace.md),
-                SectionTitle('Selected Day: ${ymd(_selectedDay)}'),
+                SectionTitle('选中日期：${ymd(_selectedDay)}'),
                 const SizedBox(height: DsSpace.sm),
                 if (dayEntries.isEmpty)
-                  const EmptyState(title: 'No outfit on this day', caption: 'Tap another date to inspect records.')
+                  const EmptyState(title: '这一天还没有记录', caption: '回到“今日”页即可马上记录')
                 else
                   ...dayEntries.map(
                     (e) => _TimelineCard(
@@ -96,7 +90,7 @@ class _DiaryPageState extends State<DiaryPage> {
                   ),
               ] else ...[
                 if (widget.store.outfits.isEmpty)
-                  const EmptyState(title: 'No timeline records', caption: 'Create your first outfit record in Today.')
+                  const EmptyState(title: '暂无时间线', caption: '先去记录第一条穿搭吧')
                 else
                   ...widget.store.outfits.map(
                     (e) => _TimelineCard(
@@ -155,9 +149,10 @@ class _CalendarView extends StatelessWidget {
           borderRadius: DsRadius.md,
           child: Container(
             decoration: BoxDecoration(
-              color: isSelected ? const Color(0x35AD7E45) : Colors.transparent,
+              color: isSelected ? const Color(0x1AAD7E45) : Colors.transparent,
               borderRadius: DsRadius.md,
             ),
+            padding: const EdgeInsets.symmetric(vertical: 6),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -198,7 +193,7 @@ class _CalendarView extends StatelessWidget {
             crossAxisCount: 7,
             physics: const NeverScrollableScrollPhysics(),
             shrinkWrap: true,
-            childAspectRatio: 1,
+            childAspectRatio: 0.85,
             children: cells,
           ),
         ],
@@ -250,7 +245,7 @@ class _TimelineCard extends StatelessWidget {
                     Text(ymd(entry.date), style: Theme.of(context).textTheme.bodySmall),
                     const SizedBox(height: 4),
                     Text(
-                      entry.note.isEmpty ? '(no note)' : entry.note,
+                      entry.note.isEmpty ? '（暂无备注）' : entry.note,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),

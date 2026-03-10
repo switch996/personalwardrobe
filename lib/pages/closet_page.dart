@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import '../design/ds.dart';
 import '../design/widgets.dart';
@@ -25,19 +25,19 @@ class ClosetPage extends StatelessWidget {
       valueListenable: refresh,
       builder: (context, value, child) {
         return AppScaffold(
-          title: 'Closet',
+          title: '衣橱',
           floatingActionButton: FloatingActionButton.extended(
             onPressed: () async {
               final changed = await showClosetItemEditorSheet(context, store: store);
               if (changed == true) onRefresh();
             },
-            label: const Text('New Item'),
+            label: const Text('新建单品'),
             icon: const Icon(Icons.add),
           ),
           body: Padding(
             padding: const EdgeInsets.all(DsSpace.md),
             child: store.closet.isEmpty
-                ? const EmptyState(title: 'Closet is empty', caption: 'Create your first item to start.')
+                ? const EmptyState(title: '衣橱还空着', caption: '点击右下角添加第一件单品')
                 : GridView.builder(
                     itemCount: store.closet.length,
                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -106,7 +106,11 @@ class _ClosetGridItem extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 3),
-            Text(item.category, style: Theme.of(context).textTheme.bodySmall),
+            Text(LocalStore.categoryLabel(item.category), style: Theme.of(context).textTheme.bodySmall),
+            if (item.subCategory.isNotEmpty) ...[
+              const SizedBox(height: 3),
+              Text(item.subCategory, style: Theme.of(context).textTheme.bodySmall),
+            ],
             if (item.brand.isNotEmpty) ...[
               const SizedBox(height: 3),
               Text(
@@ -116,6 +120,11 @@ class _ClosetGridItem extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
             ],
+            const SizedBox(height: 4),
+            Text(
+              item.price <= 0 ? '价格：未填写' : '价格：¥${item.price.toStringAsFixed(0)}',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
           ],
         ),
       ),

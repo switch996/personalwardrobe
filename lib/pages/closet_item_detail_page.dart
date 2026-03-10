@@ -27,6 +27,26 @@ class ClosetItemDetailPage extends StatelessWidget {
     if (item == null) {
       return const Scaffold(body: Center(child: Text('未找到该单品')));
     }
+    Future<void> handleEdit() async {
+      final changed = await showClosetItemEditorSheet(context, store: store, editing: item);
+      if (changed == true) onRefresh();
+    }
+
+    Future<void> handleDelete() async {
+      final ok = await confirmDialog(
+        context,
+        title: '确认删除',
+        message: '删除后也会取消与穿搭的关联，确定继续？',
+      );
+      if (!ok) return;
+      await store.deleteClosetItem(item.id);
+      onRefresh();
+      if (context.mounted) Navigator.of(context).pop();
+    }
+
+    void handleTry() {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('已为今日穿搭添加这件单品')));
+    }
 
     return Scaffold(
       backgroundColor: DsColors.paper,
@@ -78,11 +98,32 @@ class ClosetItemDetailPage extends StatelessWidget {
                     ],
                   ),
                 ),
-                _CircleButton(
-                  icon: Icons.favorite_border,
-                  onTap: () {},
-                  background: Colors.white,
-                  iconColor: const Color(0xFFEA680E),
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 8,
+                  children: [
+                    _ActionPill(
+                      icon: Icons.edit_outlined,
+                      onTap: handleEdit,
+                      background: const Color(0xFFFFF2E5),
+                      iconColor: const Color(0xFFC67C2F),
+                      tooltip: '修改资料',
+                    ),
+                    _ActionPill(
+                      icon: Icons.delete_outline,
+                      onTap: handleDelete,
+                      background: const Color(0xFFFFEAEA),
+                      iconColor: const Color(0xFFD74B3F),
+                      tooltip: '删除单品',
+                    ),
+                    _ActionPill(
+                      icon: Icons.checkroom_outlined,
+                      onTap: handleTry,
+                      background: const Color(0xFFFFF3E4),
+                      iconColor: const Color(0xFFEA7F2C),
+                      tooltip: '立刻穿上',
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -90,71 +131,28 @@ class ClosetItemDetailPage extends StatelessWidget {
             _InfoCard(
               children: [
                 _InfoRow(icon: Icons.price_check_outlined, label: '价格', value: item.price <= 0 ? '未填写' : '¥${item.price.toStringAsFixed(0)}', highlight: item.price > 0),
-                _InfoRow(
-                  icon: Icons.straighten_outlined,
-                  label: '尺码',
-                  value: item.subCategory.isEmpty ? '标准' : item.subCategory,
-                ),
-                _InfoRow(icon: Icons.palette_outlined, label: '材质', value: item.color.isEmpty ? '未填写' : item.color),
-                _InfoRow(icon: Icons.event_outlined, label: '购买日期', value: _formatDate(item.createdAt)),
+                _InfoRow(icon: Icons.category_outlined, label: '分类', value: LocalStore.categoryLabel(item.category)),
+                if (item.subCategory.isNotEmpty)
+                  _InfoRow(
+                    icon: Icons.style_outlined,
+                    label: '子分类',
+                    value: item.subCategory,
+                  ),
+                if (item.brand.isNotEmpty)
+                  _InfoRow(
+                    icon: Icons.store_mall_directory_outlined,
+                    label: '品牌',
+                    value: item.brand,
+                  ),
+                _InfoRow(icon: Icons.palette_outlined, label: '颜色', value: item.color.isEmpty ? '未填写' : item.color),
               ],
             ),
             const SizedBox(height: 20),
-            const Text('穿搭笔记', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: DsColors.ink)),
+            const Text('备注信息', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: DsColors.ink)),
             const SizedBox(height: 8),
             Text(
-              item.note.isEmpty ? '这件单品还没有备注，试着写下今日的穿搭灵感吧。' : item.note,
+              item.note.isEmpty ? '这件单品还没有备注，试着写下灵感与搭配建议吧。' : item.note,
               style: const TextStyle(color: DsColors.mutedInk, height: 1.4),
-            ),
-            const SizedBox(height: 24),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () async {
-                      final changed = await showClosetItemEditorSheet(context, store: store, editing: item);
-                      if (changed == true) onRefresh();
-                    },
-                    icon: const Icon(Icons.edit_outlined),
-                    label: const Text('修改资料'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: DsColors.ink,
-                      side: const BorderSide(color: DsColors.line),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: FilledButton.icon(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('试穿功能即将上线')));
-                    },
-                    icon: const Icon(Icons.checkroom_outlined),
-                    label: const Text('立即试穿'),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: const Color(0xFFFF7B1B),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            TextButton(
-              onPressed: () async {
-                final ok = await confirmDialog(
-                  context,
-                  title: '确认删除',
-                  message: '删除后也会取消与穿搭的关联，确定继续？',
-                );
-                if (!ok) return;
-                await store.deleteClosetItem(item.id);
-                onRefresh();
-                if (context.mounted) Navigator.of(context).pop();
-              },
-              child: const Text('删除单品', style: TextStyle(color: Colors.redAccent)),
             ),
           ],
         ),
@@ -162,15 +160,57 @@ class ClosetItemDetailPage extends StatelessWidget {
     );
   }
 
-  String _formatDate(DateTime date) {
-    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-  }
-
   String _tagLine(ClosetItem item) {
     final tags = <String>[];
     if (item.brand.isNotEmpty) tags.add(item.brand);
     tags.add(LocalStore.categoryLabel(item.category));
     return tags.join(' · ');
+  }
+}
+
+class _CircleButton extends StatelessWidget {
+  const _CircleButton({
+    required this.icon,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          shape: BoxShape.circle,
+          boxShadow: const [BoxShadow(color: DsColors.shadow, blurRadius: 12, offset: Offset(0, 6))],
+        ),
+        child: Icon(icon, color: DsColors.ink, size: 18),
+      ),
+    );
+  }
+}
+
+class _InfoCard extends StatelessWidget {
+  const _InfoCard({required this.children});
+
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF6EB),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: const [BoxShadow(color: DsColors.shadow, blurRadius: 20, offset: Offset(0, 10))],
+      ),
+      child: Column(children: children),
+    );
   }
 }
 
@@ -194,13 +234,13 @@ class _InfoRow extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 34,
-            height: 34,
+            width: 36,
+            height: 36,
             decoration: BoxDecoration(
-              color: const Color(0xFFF7EBF1),
+              color: const Color(0xFFFFF0E1),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: const Color(0xFFB77A83)),
+            child: Icon(icon, color: const Color(0xFFEA7F2C)),
           ),
           const SizedBox(width: 12),
           Text(label, style: const TextStyle(color: Color(0xFF7C6A73))),
@@ -208,7 +248,7 @@ class _InfoRow extends StatelessWidget {
           Text(
             value.isEmpty ? '—' : value,
             style: TextStyle(
-              color: highlight ? const Color(0xFFF45C9F) : DsColors.ink,
+              color: highlight ? const Color(0xFFEA680E) : DsColors.ink,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -218,52 +258,37 @@ class _InfoRow extends StatelessWidget {
   }
 }
 
-class _CircleButton extends StatelessWidget {
-  const _CircleButton({
+class _ActionPill extends StatelessWidget {
+  const _ActionPill({
     required this.icon,
     required this.onTap,
     this.background = Colors.white,
     this.iconColor = DsColors.ink,
+    this.tooltip,
   });
 
   final IconData icon;
   final VoidCallback onTap;
   final Color background;
   final Color iconColor;
+  final String? tooltip;
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    final pill = GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 40,
-        height: 40,
+        width: 42,
+        height: 42,
         decoration: BoxDecoration(
           color: background,
-          shape: BoxShape.circle,
+          borderRadius: BorderRadius.circular(17),
           boxShadow: const [BoxShadow(color: DsColors.shadow, blurRadius: 12, offset: Offset(0, 6))],
         ),
-        child: Icon(icon, color: iconColor, size: 18),
+        child: Icon(icon, color: iconColor, size: 20),
       ),
     );
-  }
-}
-
-class _InfoCard extends StatelessWidget {
-  const _InfoCard({required this.children});
-
-  final List<Widget> children;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: const [BoxShadow(color: DsColors.shadow, blurRadius: 20, offset: Offset(0, 10))],
-      ),
-      child: Column(children: children),
-    );
+    if (tooltip == null) return pill;
+    return Tooltip(message: tooltip!, child: pill);
   }
 }

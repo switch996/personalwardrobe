@@ -23,14 +23,13 @@ class TodayPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return ValueListenableBuilder<int>(
       valueListenable: refresh,
-      builder: (context, value, child) {
+      builder: (context, _, __) {
         final now = DateTime.now();
-        final todayEntries = store.outfitsOn(now);
-        final coverPath = todayEntries.isNotEmpty
-            ? todayEntries.first.imagePath
+        final todays = store.outfitsOn(now);
+        final heroImage = todays.isNotEmpty
+            ? todays.first.imagePath
             : (store.outfits.isNotEmpty ? store.outfits.first.imagePath : '');
-        final screenWidth = MediaQuery.of(context).size.width;
-        final heroHeight = (screenWidth - DsSpace.md * 2) * 1.22;
+        final heroHeight = (MediaQuery.of(context).size.width - DsSpace.md * 2) * 1.2;
 
         return Scaffold(
           backgroundColor: DsColors.paper,
@@ -41,7 +40,7 @@ class TodayPage extends StatelessWidget {
                 _HeaderRow(date: now),
                 const SizedBox(height: DsSpace.md),
                 _HeroCard(
-                  imagePath: coverPath,
+                  imagePath: heroImage,
                   height: heroHeight.clamp(360, 560).toDouble(),
                   onCameraTap: () async {
                     final changed = await showOutfitEditorSheet(
@@ -226,7 +225,7 @@ class _ClosetBanner extends StatelessWidget {
       onTap: onTap,
       borderRadius: DsRadius.lg,
       child: Container(
-        height: 162,
+        height: 160,
         decoration: BoxDecoration(
           borderRadius: DsRadius.lg,
           gradient: const LinearGradient(
@@ -261,7 +260,7 @@ class _ClosetBanner extends StatelessWidget {
                     '进入虚拟衣橱',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 40 / 2,
+                      fontSize: 20,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -276,7 +275,7 @@ class _ClosetBanner extends StatelessWidget {
                   ),
                   SizedBox(height: 8),
                   Text(
-                    '点击推门开启 ->',
+                    '点击推门开启 →',
                     style: TextStyle(
                       color: Color(0xFFF5903D),
                       fontSize: 16,
@@ -308,10 +307,7 @@ class _WeekSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final now = DateTime.now();
     final start = DateTime(now.year, now.month, now.day - 3);
-    final days = List<DateTime>.generate(
-      7,
-      (index) => DateTime(start.year, start.month, start.day + index),
-    );
+    final days = List<DateTime>.generate(7, (index) => DateTime(start.year, start.month, start.day + index));
 
     return Column(
       children: [
@@ -322,7 +318,7 @@ class _WeekSection extends StatelessWidget {
                 '本周穿搭日历',
                 style: TextStyle(
                   color: DsColors.ink,
-                  fontSize: 40 / 2,
+                  fontSize: 20,
                   fontWeight: FontWeight.w800,
                 ),
               ),
@@ -337,7 +333,7 @@ class _WeekSection extends StatelessWidget {
                 '查看全部',
                 style: TextStyle(
                   color: Color(0xFFF45E06),
-                  fontSize: 34 / 2,
+                  fontSize: 17,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -394,7 +390,7 @@ class _WeekDayCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dayLabel = _weekdayLabel(day.weekday);
+    final label = _weekdayLabel(day.weekday);
     final selected = isToday && hasRecord;
     final outlined = isToday && !hasRecord;
 
@@ -421,7 +417,7 @@ class _WeekDayCard extends StatelessWidget {
         child: Column(
           children: [
             Text(
-              dayLabel,
+              label,
               style: TextStyle(
                 color: selected ? Colors.white : const Color(0xFF97A6BA),
                 fontSize: 11,
@@ -463,7 +459,7 @@ class _WeekDayCard extends StatelessWidget {
 }
 
 String _weekdayLabel(int weekday) {
-  const labels = <String>['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+  const labels = <String>['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
   return labels[weekday - 1];
 }
 

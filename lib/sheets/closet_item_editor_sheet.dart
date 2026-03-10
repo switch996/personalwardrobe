@@ -257,7 +257,6 @@ class _ClosetItemEditorSheetState extends State<_ClosetItemEditorSheet> {
       price: priceValue,
     );
     if (!mounted) return;
-    showSnack(context, '单品已保存');
     Navigator.of(context).pop(true);
   }
 }

@@ -1,7 +1,9 @@
 ﻿import 'package:flutter/material.dart';
 
 import '../design/ds.dart';
+import '../design/widgets.dart';
 import '../models/closet_item.dart';
+import '../pages/closet_item_detail_page.dart';
 import '../pages/closet_page.dart';
 import '../pages/diary_page.dart';
 import '../pages/me_page.dart';
@@ -46,7 +48,12 @@ class _VirtualClosetPageState extends State<VirtualClosetPage> {
                   onChange: (value) => setState(() => _byType = value),
                 ),
                 const SizedBox(height: 20),
-                _FloatBoard(store: widget.store, byType: _byType),
+                _FloatBoard(
+                  store: widget.store,
+                  byType: _byType,
+                  refresh: widget.refresh,
+                  onRefresh: widget.onRefresh,
+                ),
                 const SizedBox(height: 24),
                 _WeeklyStrip(
                   store: widget.store,
@@ -173,10 +180,17 @@ class _SwitchCell extends StatelessWidget {
 }
 
 class _FloatBoard extends StatelessWidget {
-  const _FloatBoard({required this.store, required this.byType});
+  const _FloatBoard({
+    required this.store,
+    required this.byType,
+    required this.refresh,
+    required this.onRefresh,
+  });
 
   final LocalStore store;
   final bool byType;
+  final ValueNotifier<int> refresh;
+  final VoidCallback onRefresh;
 
   @override
   Widget build(BuildContext context) {
@@ -191,11 +205,52 @@ class _FloatBoard extends StatelessWidget {
       child: Stack(
         clipBehavior: Clip.none,
         children: [
-          Positioned(left: 12, top: 16, child: _FloatIcon(label: _labelFor(topItem, '上装'), icon: Icons.checkroom_outlined)),
-          Positioned(right: 20, top: 0, child: _FloatIcon(label: _labelFor(accessoryItem, '配饰'), icon: Icons.auto_awesome_outlined)),
-          Positioned(left: 120, top: 40, child: _FloatIcon(label: _labelFor(dressItem, '连衣裙'), icon: Icons.dry_cleaning, highlighted: true)),
-          Positioned(left: 30, bottom: 10, child: _FloatIcon(label: _labelFor(shoesItem, '鞋子'), icon: Icons.hiking_outlined)),
-          Positioned(right: 24, bottom: 20, child: _FloatIcon(label: _labelFor(bagItem, '包袋'), icon: Icons.shopping_bag_outlined)),
+          Positioned(
+            left: 12,
+            top: 16,
+            child: _FloatIcon(
+              label: _labelFor(topItem, '上装'),
+              icon: Icons.checkroom_outlined,
+              onTap: () => _openList(context, category: 'top', item: topItem),
+            ),
+          ),
+          Positioned(
+            right: 20,
+            top: 0,
+            child: _FloatIcon(
+              label: _labelFor(accessoryItem, '配饰'),
+              icon: Icons.auto_awesome_outlined,
+              onTap: () => _openList(context, category: 'accessory', item: accessoryItem),
+            ),
+          ),
+          Positioned(
+            left: 120,
+            top: 40,
+            child: _FloatIcon(
+              label: _labelFor(dressItem, '连衣裙'),
+              icon: Icons.dry_cleaning,
+              highlighted: true,
+              onTap: () => _openList(context, category: 'dress', item: dressItem),
+            ),
+          ),
+          Positioned(
+            left: 30,
+            bottom: 10,
+            child: _FloatIcon(
+              label: _labelFor(shoesItem, '鞋子'),
+              icon: Icons.hiking_outlined,
+              onTap: () => _openList(context, category: 'shoes', item: shoesItem),
+            ),
+          ),
+          Positioned(
+            right: 24,
+            bottom: 20,
+            child: _FloatIcon(
+              label: _labelFor(bagItem, '包袋'),
+              icon: Icons.shopping_bag_outlined,
+              onTap: () => _openList(context, category: 'bag', item: bagItem),
+            ),
+          ),
         ],
       ),
     );
@@ -215,14 +270,46 @@ class _FloatBoard extends StatelessWidget {
     final brand = item?.brand.trim() ?? '';
     return brand.isEmpty ? '未设置品牌' : brand;
   }
+
+  void _openList(BuildContext context, {required String category, ClosetItem? item}) {
+    if (byType) {
+      final title = '${LocalStore.categoryLabel(category)}列表';
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => CategoryListPage(
+            store: store,
+            refresh: refresh,
+            onRefresh: onRefresh,
+            title: title,
+            category: category,
+          ),
+        ),
+      );
+    } else {
+      final brandValue = item?.brand.trim() ?? '';
+      final display = brandValue.isEmpty ? '未设置品牌' : brandValue;
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => CategoryListPage(
+            store: store,
+            refresh: refresh,
+            onRefresh: onRefresh,
+            title: '$display 列表',
+            brand: brandValue,
+          ),
+        ),
+      );
+    }
+  }
 }
 
 class _FloatIcon extends StatefulWidget {
-  const _FloatIcon({required this.label, required this.icon, this.highlighted = false});
+  const _FloatIcon({required this.label, required this.icon, this.highlighted = false, this.onTap});
 
   final String label;
   final IconData icon;
   final bool highlighted;
+  final VoidCallback? onTap;
 
   @override
   State<_FloatIcon> createState() => _FloatIconState();
@@ -239,10 +326,12 @@ class _FloatIconState extends State<_FloatIcon> {
       curve: Curves.easeInOut,
       onEnd: () => setState(() => _forward = !_forward),
       builder: (context, value, child) => Transform.translate(offset: Offset(0, value), child: child),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
             width: widget.highlighted ? 84 : 70,
             height: widget.highlighted ? 84 : 70,
             decoration: BoxDecoration(
@@ -275,7 +364,250 @@ class _FloatIconState extends State<_FloatIcon> {
               fontWeight: FontWeight.w700,
             ),
           ),
-        ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class CategoryListPage extends StatefulWidget {
+  const CategoryListPage({
+    super.key,
+    required this.store,
+    required this.refresh,
+    required this.onRefresh,
+    required this.title,
+    this.category,
+    this.brand,
+  });
+
+  final LocalStore store;
+  final ValueNotifier<int> refresh;
+  final VoidCallback onRefresh;
+  final String title;
+  final String? category;
+  final String? brand;
+
+  @override
+  State<CategoryListPage> createState() => _CategoryListPageState();
+}
+
+class _CategoryListPageState extends State<CategoryListPage> {
+  final TextEditingController _search = TextEditingController();
+  String _subFilter = '全部';
+
+  @override
+  void initState() {
+    super.initState();
+    _search.addListener(() => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    _search.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFFDF5EB),
+      body: SafeArea(
+        child: ValueListenableBuilder<int>(
+          valueListenable: widget.refresh,
+          builder: (context, value, _) {
+            final items = _filteredItems();
+            final subOptions = widget.category == null ? const <String>[] : LocalStore.subCategoryOptions(widget.category!);
+            if (!subOptions.contains(_subFilter) && _subFilter != '全部') {
+              _subFilter = '全部';
+            }
+            return ListView(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+              children: [
+                Row(
+                  children: [
+                    IconButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+                    ),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            widget.title,
+                            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: DsColors.ink),
+                          ),
+                          const SizedBox(height: 4),
+                        ],
+                      ),
+                    ),
+                    Text(
+                      '共${items.length}件单品',
+                      style: const TextStyle(color: DsColors.mutedInk),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: DsSpace.md),
+                _SearchField(controller: _search),
+                if (subOptions.isNotEmpty) ...[
+                  const SizedBox(height: DsSpace.sm),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _FilterChip(
+                          label: '全部',
+                          selected: _subFilter == '全部',
+                          onSelected: () => setState(() => _subFilter = '全部'),
+                        ),
+                        ...subOptions.map(
+                          (label) => _FilterChip(
+                            label: label,
+                            selected: _subFilter == label,
+                            onSelected: () => setState(() => _subFilter = label),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                const SizedBox(height: DsSpace.md),
+                if (items.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 60),
+                    child: EmptyState(title: '暂无单品', caption: '尝试更换筛选或先去添加新单品吧'),
+                  )
+                else
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: items.length,
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
+                      childAspectRatio: 0.74,
+                    ),
+                    itemBuilder: (context, index) {
+                      final item = items[index];
+                      return InkWell(
+                        borderRadius: BorderRadius.circular(24),
+                        onTap: () async {
+                          await Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => ClosetItemDetailPage(
+                                itemId: item.id,
+                                store: widget.store,
+                                refresh: widget.refresh,
+                                onRefresh: widget.onRefresh,
+                              ),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(24),
+                            boxShadow: const [
+                              BoxShadow(color: DsColors.shadow, blurRadius: 16, offset: Offset(0, 8)),
+                            ],
+                          ),
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(20),
+                                  child: AppImage(path: item.imagePath, width: double.infinity, height: double.infinity),
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                item.name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(fontWeight: FontWeight.w700),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '添加于 ${_formatDate(item.createdAt)}',
+                                style: const TextStyle(fontSize: 12, color: DsColors.mutedInk),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  List<ClosetItem> _filteredItems() {
+    final query = _search.text.trim().toLowerCase();
+    final filtered = widget.store.closet.where((item) {
+      if (widget.category != null && item.category != widget.category) return false;
+      if (widget.brand != null && item.brand.trim() != widget.brand) return false;
+      if (_subFilter != '全部' && item.subCategory != _subFilter) return false;
+      if (query.isNotEmpty && !item.name.toLowerCase().contains(query)) return false;
+      return true;
+    }).toList();
+    filtered.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return filtered;
+  }
+
+  String _formatDate(DateTime date) {
+    final m = date.month.toString().padLeft(2, '0');
+    final d = date.day.toString().padLeft(2, '0');
+    return '${date.year}.$m.$d';
+  }
+}
+
+class _SearchField extends StatelessWidget {
+  const _SearchField({required this.controller});
+
+  final TextEditingController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        hintText: '搜索我的衣橱...',
+        prefixIcon: const Icon(Icons.search),
+        filled: true,
+        fillColor: Colors.white,
+      ),
+    );
+  }
+}
+
+class _FilterChip extends StatelessWidget {
+  const _FilterChip({required this.label, required this.selected, required this.onSelected});
+
+  final String label;
+  final bool selected;
+  final VoidCallback onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: ChoiceChip(
+        label: Text(label),
+        selected: selected,
+        onSelected: (_) => onSelected(),
+        selectedColor: DsColors.copper,
+        labelStyle: TextStyle(color: selected ? Colors.white : DsColors.ink, fontWeight: FontWeight.w600),
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       ),
     );
   }

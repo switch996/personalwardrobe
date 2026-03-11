@@ -44,8 +44,11 @@ class ClosetItemDetailPage extends StatelessWidget {
       if (context.mounted) Navigator.of(context).pop();
     }
 
-    void handleTry() {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('已为今日穿搭添加这件单品')));
+    Future<void> handleTry() async {
+      await store.markItemAsWornToday(item.id);
+      onRefresh();
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('已加入今日穿搭单品列表')));
     }
 
     return Scaffold(
@@ -118,7 +121,7 @@ class ClosetItemDetailPage extends StatelessWidget {
                     ),
                     _ActionPill(
                       icon: Icons.checkroom_outlined,
-                      onTap: handleTry,
+                      onTap: () => handleTry(),
                       background: const Color(0xFFFFF3E4),
                       iconColor: const Color(0xFFEA7F2C),
                       tooltip: '立刻穿上',

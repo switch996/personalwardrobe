@@ -7,7 +7,6 @@ import '../pages/closet_item_detail_page.dart';
 import '../pages/closet_page.dart';
 import '../pages/diary_page.dart';
 import '../pages/me_page.dart';
-import '../pages/outfit_detail_page.dart';
 import '../sheets/closet_item_editor_sheet.dart';
 import '../store/local_store.dart';
 
@@ -55,7 +54,7 @@ class _VirtualClosetPageState extends State<VirtualClosetPage> {
                   onRefresh: widget.onRefresh,
                 ),
                 const SizedBox(height: 24),
-                _WeeklyStrip(
+                _TodayWearList(
                   store: widget.store,
                   refresh: widget.refresh,
                   onRefresh: widget.onRefresh,
@@ -179,6 +178,257 @@ class _SwitchCell extends StatelessWidget {
   }
 }
 
+class _TodayWearList extends StatelessWidget {
+  const _TodayWearList({required this.store, required this.refresh, required this.onRefresh});
+
+  final LocalStore store;
+  final ValueNotifier<int> refresh;
+  final VoidCallback onRefresh;
+
+  @override
+  Widget build(BuildContext context) {
+    final items = store.quickWearItemsForToday();
+    final now = DateTime.now();
+    final dateLabel = '${now.month}月${now.day}日';
+    const accentBackground = Color(0x1AF5903D);
+    const accentBorder = Color(0x33F5903D);
+    const chipBackground = Color(0x33F7B369);
+
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(30),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFFFFFAF1), Color(0xFFFFF1DC)],
+        ),
+        boxShadow: const [
+          BoxShadow(color: Color(0x26F4A762), blurRadius: 24, offset: Offset(0, 14)),
+        ],
+      ),
+      padding: const EdgeInsets.fromLTRB(20, 22, 20, 26),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Text(
+                '今日穿搭单品',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: DsColors.ink),
+              ),
+              const SizedBox(width: 10),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: chipBackground,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  '${items.length} 件',
+                  style: const TextStyle(color: Color(0xFFB6610D), fontWeight: FontWeight.w700),
+                ),
+              ),
+              const Spacer(),
+              Text(
+                dateLabel,
+                style: const TextStyle(color: Color(0xFF9A6D39), fontWeight: FontWeight.w600),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(Icons.info_outline, size: 18, color: Color(0xFFF08232)),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  '在单品详情点击“立刻穿上”添加，长按单品卡片可删除。',
+                  style: const TextStyle(color: Color(0xFFB1773F), fontSize: 13, height: 1.4),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          if (items.isEmpty)
+            Container(
+              height: 110,
+              decoration: BoxDecoration(
+                color: accentBackground,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: accentBorder),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              alignment: Alignment.centerLeft,
+              child: const Text(
+                '今日还没有选定单品，去逛逛衣橱挑一件吧～',
+                style: TextStyle(color: Color(0xFFB1773F), fontWeight: FontWeight.w600),
+              ),
+            )
+          else
+            SizedBox(
+              height: 210,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: items.length,
+                separatorBuilder: (context, _) => const SizedBox(width: 12),
+                itemBuilder: (context, index) {
+                  final item = items[index];
+                  return _QuickWearItemCard(
+                    item: item,
+                    onTap: () async {
+                      await Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => ClosetItemDetailPage(
+                            itemId: item.id,
+                            store: store,
+                            refresh: refresh,
+                            onRefresh: onRefresh,
+                          ),
+                        ),
+                      );
+                    },
+                    onRemove: () async {
+                      final removed = await store.removeQuickWearItem(item.id);
+                      if (removed) {
+                        onRefresh();
+                        if (!context.mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('已移除 ${item.name}')),
+                        );
+                      }
+                    },
+                  );
+                },
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _QuickWearItemCard extends StatefulWidget {
+  const _QuickWearItemCard({required this.item, required this.onTap, required this.onRemove});
+
+  final ClosetItem item;
+  final VoidCallback onTap;
+  final Future<void> Function() onRemove;
+
+  @override
+  State<_QuickWearItemCard> createState() => _QuickWearItemCardState();
+}
+
+class _QuickWearItemCardState extends State<_QuickWearItemCard> {
+  bool _showDelete = false;
+
+  void _handleTap() {
+    if (_showDelete) {
+      setState(() => _showDelete = false);
+      return;
+    }
+    widget.onTap();
+  }
+
+  void _handleLongPress() {
+    if (!_showDelete) {
+      setState(() => _showDelete = true);
+    }
+  }
+
+  Future<void> _handleRemove() async {
+    await widget.onRemove();
+    if (mounted) {
+      setState(() => _showDelete = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final brandText = widget.item.brand.isEmpty ? '未设置品牌' : widget.item.brand;
+    return SizedBox(
+      width: 140,
+      child: Column(
+        children: [
+          Expanded(
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: GestureDetector(
+                    onTap: _handleTap,
+                    onLongPress: _handleLongPress,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(24),
+                      child: AppImage(path: widget.item.imagePath, width: double.infinity, height: double.infinity),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  right: 6,
+                  top: 6,
+                  child: IgnorePointer(
+                    ignoring: !_showDelete,
+                    child: AnimatedOpacity(
+                      opacity: _showDelete ? 1 : 0,
+                      duration: const Duration(milliseconds: 200),
+                      child: _RemoveBadge(onRemove: _handleRemove),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            child: Text(
+              widget.item.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+            ),
+          ),
+          const SizedBox(height: 2),
+          SizedBox(
+            width: double.infinity,
+            child: Text(
+              '${LocalStore.categoryLabel(widget.item.category)} · $brandText',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 12, color: DsColors.mutedInk),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RemoveBadge extends StatelessWidget {
+  const _RemoveBadge({required this.onRemove});
+
+  final Future<void> Function() onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: const Color(0xCC1F1F1F),
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        onTap: onRemove,
+        borderRadius: BorderRadius.circular(14),
+        child: const SizedBox(
+          width: 28,
+          height: 28,
+          child: Icon(Icons.close, color: Colors.white, size: 18),
+        ),
+      ),
+    );
+  }
+}
+
 class _FloatBoard extends StatelessWidget {
   const _FloatBoard({
     required this.store,
@@ -194,63 +444,62 @@ class _FloatBoard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final topItem = _firstByCategory('top');
-    final accessoryItem = _firstByCategory('accessory');
-    final dressItem = _firstByCategory('dress');
-    final shoesItem = _firstByCategory('shoes');
-    final bagItem = _firstByCategory('bag');
+    final unmatchedTypeCount = _unmatchedTypeCount();
+    final brandlessCount = _brandlessCount();
+    final showTypeAlert = byType && unmatchedTypeCount > 0;
+    final showBrandAlert = !byType && brandlessCount > 0;
 
-    return SizedBox(
-      height: 240,
-      child: Stack(
-        clipBehavior: Clip.none,
+    final categories = LocalStore.closetCategories;
+    final iconWidgets = categories.map((category) {
+      final item = _firstByCategory(category);
+      final labelFallback = LocalStore.categoryLabel(category);
+      return _FloatIcon(
+        label: _labelFor(item, labelFallback),
+        icon: _iconForCategory(category),
+        highlighted: category == 'dress',
+        onTap: () => _openList(context, category: category, item: item),
+      );
+    }).toList();
+
+    final alerts = <Widget>[];
+    if (showTypeAlert) {
+      alerts.add(
+        _FloatIcon(
+          label: '待匹配类型',
+          icon: Icons.help_outline,
+          onTap: () => _showMissingTypeNotice(context, unmatchedTypeCount),
+        ),
+      );
+    }
+    if (showBrandAlert) {
+      alerts.add(
+        _FloatIcon(
+          label: '未设置品牌',
+          icon: Icons.new_label_outlined,
+          onTap: () => _showMissingBrandNotice(context, brandlessCount),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Column(
         children: [
-          Positioned(
-            left: 12,
-            top: 16,
-            child: _FloatIcon(
-              label: _labelFor(topItem, '上装'),
-              icon: Icons.checkroom_outlined,
-              onTap: () => _openList(context, category: 'top', item: topItem),
-            ),
+          Wrap(
+            alignment: WrapAlignment.spaceEvenly,
+            runSpacing: 28,
+            spacing: 12,
+            children: iconWidgets,
           ),
-          Positioned(
-            right: 20,
-            top: 0,
-            child: _FloatIcon(
-              label: _labelFor(accessoryItem, '配饰'),
-              icon: Icons.auto_awesome_outlined,
-              onTap: () => _openList(context, category: 'accessory', item: accessoryItem),
+          if (alerts.isNotEmpty) ...[
+            const SizedBox(height: 24),
+            Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 18,
+              runSpacing: 18,
+              children: alerts,
             ),
-          ),
-          Positioned(
-            left: 120,
-            top: 40,
-            child: _FloatIcon(
-              label: _labelFor(dressItem, '连衣裙'),
-              icon: Icons.dry_cleaning,
-              highlighted: true,
-              onTap: () => _openList(context, category: 'dress', item: dressItem),
-            ),
-          ),
-          Positioned(
-            left: 30,
-            bottom: 10,
-            child: _FloatIcon(
-              label: _labelFor(shoesItem, '鞋子'),
-              icon: Icons.hiking_outlined,
-              onTap: () => _openList(context, category: 'shoes', item: shoesItem),
-            ),
-          ),
-          Positioned(
-            right: 24,
-            bottom: 20,
-            child: _FloatIcon(
-              label: _labelFor(bagItem, '包袋'),
-              icon: Icons.shopping_bag_outlined,
-              onTap: () => _openList(context, category: 'bag', item: bagItem),
-            ),
-          ),
+          ],
         ],
       ),
     );
@@ -299,6 +548,48 @@ class _FloatBoard extends StatelessWidget {
           ),
         ),
       );
+    }
+  }
+
+  int _unmatchedTypeCount() {
+    final displayed = LocalStore.closetCategories.toSet();
+    return store.closet.where((item) => !displayed.contains(item.category)).length;
+  }
+
+  int _brandlessCount() {
+    return store.closet.where((item) => item.brand.trim().isEmpty).length;
+  }
+
+  void _showMissingTypeNotice(BuildContext context, int count) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('当前有$count 件单品未匹配到展示类型，可前往衣橱补充分类')),
+    );
+  }
+
+  void _showMissingBrandNotice(BuildContext context, int count) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('当前有$count 件单品未设置品牌，建议完善信息方便筛选')),
+    );
+  }
+
+  IconData _iconForCategory(String category) {
+    switch (category) {
+      case 'top':
+        return Icons.checkroom_outlined;
+      case 'bottom':
+        return Icons.view_day_outlined;
+      case 'shoes':
+        return Icons.hiking_outlined;
+      case 'accessory':
+        return Icons.auto_awesome_outlined;
+      case 'outerwear':
+        return Icons.downhill_skiing_outlined;
+      case 'dress':
+        return Icons.dry_cleaning;
+      case 'bag':
+        return Icons.shopping_bag_outlined;
+      default:
+        return Icons.category_outlined;
     }
   }
 }
@@ -613,168 +904,6 @@ class _FilterChip extends StatelessWidget {
   }
 }
 
-class _WeeklyStrip extends StatelessWidget {
-  const _WeeklyStrip({required this.store, required this.refresh, required this.onRefresh});
-
-  final LocalStore store;
-  final ValueNotifier<int> refresh;
-  final VoidCallback onRefresh;
-
-  @override
-  Widget build(BuildContext context) {
-    final now = DateTime.now();
-    final start = DateTime(now.year, now.month, now.day - 3);
-    final days = List<DateTime>.generate(7, (index) => DateTime(start.year, start.month, start.day + index));
-
-    return Column(
-      children: [
-        Row(
-          children: [
-            const Expanded(
-              child: Text(
-                '本周穿搭日历',
-                style: TextStyle(
-                  color: DsColors.ink,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('切换到“日历”页查看全部记录')),
-                );
-              },
-              child: const Text(
-                '查看全部',
-                style: TextStyle(
-                  color: Color(0xFFF45E06),
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: DsSpace.sm),
-        Row(
-          children: List<Widget>.generate(days.length, (index) {
-            final day = days[index];
-            final entries = store.outfitsOn(day);
-            return Expanded(
-              child: Padding(
-                padding: EdgeInsets.only(right: index == days.length - 1 ? 0 : 6),
-                child: _WeekDayCard(
-                  day: day,
-                  isToday: _isSameDay(day, now),
-                  hasRecord: entries.isNotEmpty,
-                  onTap: () async {
-                    if (entries.isEmpty) return;
-                    await Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => OutfitDetailPage(
-                          entryId: entries.first.id,
-                          store: store,
-                          refresh: refresh,
-                          onRefresh: onRefresh,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            );
-          }),
-        ),
-      ],
-    );
-  }
-}
-
-class _WeekDayCard extends StatelessWidget {
-  const _WeekDayCard({
-    required this.day,
-    required this.isToday,
-    required this.hasRecord,
-    required this.onTap,
-  });
-
-  final DateTime day;
-  final bool isToday;
-  final bool hasRecord;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final label = _weekdayLabel(day.weekday);
-    final selected = isToday && hasRecord;
-    final outlined = isToday && !hasRecord;
-
-    return InkWell(
-      borderRadius: BorderRadius.circular(14),
-      onTap: onTap,
-      child: Container(
-        height: 72,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(14),
-          color: selected ? const Color(0xFFF8660A) : const Color(0xFFF1F3F5),
-          border: outlined ? Border.all(color: const Color(0xFFF8660A), width: 1.3) : null,
-          boxShadow: selected
-              ? const [
-                  BoxShadow(
-                    color: Color(0x28F8660A),
-                    blurRadius: 14,
-                    offset: Offset(0, 8),
-                  ),
-                ]
-              : null,
-        ),
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Column(
-          children: [
-            Text(
-              label,
-              style: TextStyle(
-                color: selected ? Colors.white : const Color(0xFF97A6BA),
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(height: 1),
-            Text(
-              '${day.day}',
-              style: TextStyle(
-                color: selected ? Colors.white : DsColors.ink,
-                fontSize: 13,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Container(
-              width: 18,
-              height: 18,
-              decoration: BoxDecoration(
-                color: selected
-                    ? const Color(0x33FFFFFF)
-                    : (hasRecord ? const Color(0x1AF8660A) : const Color(0xFFE4E8EE)),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                hasRecord ? Icons.check : Icons.add,
-                size: 12,
-                color: selected
-                    ? Colors.white
-                    : (hasRecord ? const Color(0xFFF8660A) : const Color(0xFFAAB4C4)),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _BottomNav extends StatefulWidget {
   const _BottomNav({required this.store, required this.refresh, required this.onRefresh});
 
@@ -892,13 +1021,4 @@ class _BottomNavState extends State<_BottomNav> {
       ),
     );
   }
-}
-
-String _weekdayLabel(int weekday) {
-  const labels = <String>['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
-  return labels[weekday - 1];
-}
-
-bool _isSameDay(DateTime a, DateTime b) {
-  return a.year == b.year && a.month == b.month && a.day == b.day;
 }

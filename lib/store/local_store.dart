@@ -56,10 +56,14 @@ class LocalStore {
     return closetSubCategories[category] ?? const <String>[];
   }
 
+  static const int _quickWearMaxItems = 12;
+
   final List<OutfitEntry> outfits = <OutfitEntry>[];
   final List<ClosetItem> closet = <ClosetItem>[];
+  final List<String> todaysQuickWearItemIds = <String>[];
 
   Directory? _root;
+  DateTime? _quickWearDate;
 
   Future<void> loadAll() async {
     _root = await _ensureRoot();
@@ -70,6 +74,7 @@ class LocalStore {
       ..clear()
       ..addAll(await _loadCloset());
     _sortInPlace();
+    await _loadQuickWear();
   }
 
   Future<Directory> _ensureRoot() async {
@@ -113,6 +118,7 @@ class LocalStore {
 
   File get _outfitsFile => File('${_root!.path}${Platform.pathSeparator}outfits.json');
   File get _closetFile => File('${_root!.path}${Platform.pathSeparator}closet.json');
+  File get _quickWearFile => File('${_root!.path}${Platform.pathSeparator}quick_wear.json');
 
   Future<List<OutfitEntry>> _loadOutfits() async {
     if (!await _outfitsFile.exists()) {
@@ -250,7 +256,11 @@ class LocalStore {
         outfits[i] = o.copyWith(closetItemIds: o.closetItemIds.where((e) => e != id).toList());
       }
     }
+    final removed = todaysQuickWearItemIds.remove(id);
     await saveAll();
+    if (removed) {
+      await _persistQuickWear();
+    }
   }
 
   List<OutfitEntry> outfitsOn(DateTime day) {
@@ -264,5 +274,98 @@ class LocalStore {
   void _sortInPlace() {
     outfits.sort((a, b) => b.date.compareTo(a.date));
     closet.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+  }
+
+  Future<void> markItemAsWornToday(String closetItemId) async {
+    if (_root == null) return;
+    final exists = closet.any((e) => e.id == closetItemId);
+    if (!exists) return;
+
+    final now = DateTime.now();
+    if (_quickWearDate == null || !isSameDay(_quickWearDate!, now)) {
+      todaysQuickWearItemIds.clear();
+      _quickWearDate = now;
+    }
+
+    _pruneQuickWearItems();
+    todaysQuickWearItemIds.remove(closetItemId);
+    todaysQuickWearItemIds.insert(0, closetItemId);
+    if (todaysQuickWearItemIds.length > _quickWearMaxItems) {
+      todaysQuickWearItemIds.removeRange(_quickWearMaxItems, todaysQuickWearItemIds.length);
+    }
+
+    await _persistQuickWear();
+  }
+
+  Future<bool> removeQuickWearItem(String closetItemId) async {
+    if (_quickWearDate == null || !isSameDay(_quickWearDate!, DateTime.now())) {
+      todaysQuickWearItemIds.clear();
+      _quickWearDate = null;
+      await _persistQuickWear();
+      return false;
+    }
+    final removed = todaysQuickWearItemIds.remove(closetItemId);
+    if (removed) {
+      await _persistQuickWear();
+    }
+    return removed;
+  }
+
+  List<ClosetItem> quickWearItemsForToday() {
+    if (_quickWearDate == null || !isSameDay(_quickWearDate!, DateTime.now())) {
+      return const <ClosetItem>[];
+    }
+    if (todaysQuickWearItemIds.isEmpty) return const <ClosetItem>[];
+    final lookup = <String, ClosetItem>{for (final item in closet) item.id: item};
+    return todaysQuickWearItemIds.map((id) => lookup[id]).whereType<ClosetItem>().toList();
+  }
+
+  Future<void> _loadQuickWear() async {
+    todaysQuickWearItemIds.clear();
+    _quickWearDate = null;
+    if (!await _quickWearFile.exists()) {
+      await _quickWearFile.writeAsString(jsonEncode({'date': '', 'itemIds': <String>[]}));
+      return;
+    }
+
+    try {
+      final text = await _quickWearFile.readAsString();
+      final decoded = jsonDecode(text);
+      if (decoded is Map) {
+        final data = Map<String, dynamic>.from(decoded);
+        final date = DateTime.tryParse(data['date'] as String? ?? '');
+        final items = (data['itemIds'] as List?)?.whereType<String>().toList() ?? <String>[];
+        if (date != null && isSameDay(date, DateTime.now())) {
+          todaysQuickWearItemIds.addAll(items);
+          _quickWearDate = date;
+          _pruneQuickWearItems();
+        }
+      }
+    } catch (_) {
+      await _quickWearFile.writeAsString(jsonEncode({'date': '', 'itemIds': <String>[]}));
+    }
+  }
+
+  Future<void> _persistQuickWear() async {
+    await _quickWearFile.writeAsString(
+      jsonEncode({
+        'date': _quickWearDate?.toIso8601String() ?? '',
+        'itemIds': todaysQuickWearItemIds,
+      }),
+    );
+  }
+
+  void _pruneQuickWearItems() {
+    if (todaysQuickWearItemIds.isEmpty) return;
+    final closetIds = closet.map((e) => e.id).toSet();
+    final seen = <String>{};
+    final filtered = <String>[];
+    for (final id in todaysQuickWearItemIds) {
+      if (!closetIds.contains(id)) continue;
+      if (seen.add(id)) filtered.add(id);
+    }
+    todaysQuickWearItemIds
+      ..clear()
+      ..addAll(filtered);
   }
 }

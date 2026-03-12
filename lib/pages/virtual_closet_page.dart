@@ -937,12 +937,13 @@ class _BottomNavState extends State<_BottomNav> {
             setState(() {
               _navIndex = value;
             });
-            await Navigator.of(context).push(
+              await Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (_) => DiaryPage(
                   store: widget.store,
                   refresh: widget.refresh,
                   onRefresh: widget.onRefresh,
+                  showBottomNav: true,
                 ),
               ),
             );

@@ -1,13 +1,12 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+
+import 'package:image_picker/image_picker.dart';
 
 import '../design/ds.dart';
 import '../design/widgets.dart';
-import '../models/outfit_entry.dart';
 import '../pages/outfit_detail_page.dart';
 import '../pages/virtual_closet_page.dart';
-import '../sheets/outfit_editor_sheet.dart';
 import '../store/local_store.dart';
-import '../utils/date.dart';
 
 class TodayPage extends StatelessWidget {
   const TodayPage({
@@ -31,7 +30,8 @@ class TodayPage extends StatelessWidget {
         final heroImage = todays.isNotEmpty
             ? todays.first.imagePath
             : (store.outfits.isNotEmpty ? store.outfits.first.imagePath : '');
-        final heroHeight = (MediaQuery.of(context).size.width - DsSpace.md * 2) * 1.2;
+        final heroHeight =
+            (MediaQuery.of(context).size.width - DsSpace.md * 2) * 1.2;
 
         return Scaffold(
           backgroundColor: DsColors.paper,
@@ -44,7 +44,7 @@ class TodayPage extends StatelessWidget {
                 _HeroCard(
                   imagePath: heroImage,
                   height: heroHeight.clamp(360, 560).toDouble(),
-                  onCameraTap: () => _openEditor(context, now),
+                  onCameraTap: () => _pickImageAndSave(context, now),
                 ),
                 const SizedBox(height: DsSpace.md),
                 _ClosetBanner(
@@ -60,16 +60,13 @@ class TodayPage extends StatelessWidget {
                     );
                   },
                 ),
-                if (store.outfits.isNotEmpty) ...[
-                  _RecentStrip(
-                    outfits: store.outfits.take(10).toList(),
+                _WeekSection(
+                  StoreSnapshot(
                     store: store,
                     refresh: refresh,
                     onRefresh: onRefresh,
                   ),
-                  const SizedBox(height: DsSpace.md),
-                ],
-                _WeekSection(StoreSnapshot(store: store, refresh: refresh, onRefresh: onRefresh)),
+                ),
               ],
             ),
           ),
@@ -78,13 +75,51 @@ class TodayPage extends StatelessWidget {
     );
   }
 
-  Future<void> _openEditor(BuildContext context, DateTime date) async {
-    final changed = await showOutfitEditorSheet(
-      context,
-      store: store,
-      initialDate: date,
+  Future<void> _pickImageAndSave(BuildContext context, DateTime date) async {
+    final action = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.photo_camera_outlined),
+                title: const Text('拍照'),
+                onTap: () => Navigator.of(context).pop('camera'),
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library_outlined),
+                title: const Text('从相册选择'),
+                onTap: () => Navigator.of(context).pop('gallery'),
+              ),
+            ],
+          ),
+        );
+      },
     );
-    if (changed == true) onRefresh();
+    if (action == null || !context.mounted) return;
+
+    final source = action == 'camera'
+        ? ImageSource.camera
+        : ImageSource.gallery;
+    final picker = ImagePicker();
+    final file = await picker.pickImage(source: source, imageQuality: 85);
+    if (file == null) return;
+
+    await store.upsertOutfit(
+      imageSourcePath: file.path,
+      date: date,
+      note: '',
+      tags: const <String>[],
+      closetItemIds: const <String>[],
+    );
+    onRefresh();
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('已保存今日穿搭')));
   }
 }
 
@@ -112,7 +147,11 @@ class _HeaderRow extends StatelessWidget {
               const SizedBox(height: 6),
               const Row(
                 children: [
-                  Icon(Icons.wb_sunny_rounded, color: Color(0xFFF45E06), size: 24),
+                  Icon(
+                    Icons.wb_sunny_rounded,
+                    color: Color(0xFFF45E06),
+                    size: 24,
+                  ),
                   SizedBox(width: 4),
                   Text(
                     '晴 24℃',
@@ -144,9 +183,9 @@ class _HeaderRow extends StatelessWidget {
           ),
           child: IconButton(
             onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('通知中心即将开放')),
-              );
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(const SnackBar(content: Text('通知中心即将开放')));
             },
             icon: const Icon(Icons.notifications, color: Color(0xFF334A66)),
           ),
@@ -212,7 +251,11 @@ class _HeroCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: const Icon(Icons.camera_alt_outlined, color: Colors.white, size: 34),
+                child: const Icon(
+                  Icons.camera_alt_outlined,
+                  color: Colors.white,
+                  size: 34,
+                ),
               ),
             ),
           ),
@@ -242,7 +285,11 @@ class _ClosetBanner extends StatelessWidget {
             colors: [Color(0xFF1D2744), Color(0xFF6A4A30)],
           ),
           boxShadow: const [
-            BoxShadow(color: Color(0x22000000), blurRadius: 20, offset: Offset(0, 10)),
+            BoxShadow(
+              color: Color(0x22000000),
+              blurRadius: 20,
+              offset: Offset(0, 10),
+            ),
           ],
         ),
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
@@ -256,7 +303,11 @@ class _ClosetBanner extends StatelessWidget {
                 borderRadius: BorderRadius.circular(24),
                 border: Border.all(color: const Color(0x40FFFFFF)),
               ),
-              child: const Icon(Icons.door_sliding_outlined, color: Color(0xFFE5E9F0), size: 52),
+              child: const Icon(
+                Icons.door_sliding_outlined,
+                color: Color(0xFFE5E9F0),
+                size: 52,
+              ),
             ),
             const SizedBox(width: 20),
             const Expanded(
@@ -300,68 +351,12 @@ class _ClosetBanner extends StatelessWidget {
   }
 }
 
-class _RecentStrip extends StatelessWidget {
-  const _RecentStrip({
-    required this.outfits,
+class StoreSnapshot {
+  const StoreSnapshot({
     required this.store,
     required this.refresh,
     required this.onRefresh,
   });
-
-  final List<OutfitEntry> outfits;
-  final LocalStore store;
-  final ValueNotifier<int> refresh;
-  final VoidCallback onRefresh;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SectionTitle('最近十次穿搭'),
-        const SizedBox(height: DsSpace.sm),
-        SizedBox(
-          height: 96,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: outfits.length,
-            separatorBuilder: (context, _) => const SizedBox(width: 10),
-            itemBuilder: (context, index) {
-              final entry = outfits[index];
-              return GestureDetector(
-                onTap: () async {
-                  await Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => OutfitDetailPage(
-                        entryId: entry.id,
-                        store: store,
-                        refresh: refresh,
-                        onRefresh: onRefresh,
-                      ),
-                    ),
-                  );
-                },
-                child: Column(
-                  children: [
-                    AppImage(path: entry.imagePath, width: 72, height: 72, radius: BorderRadius.circular(18)),
-                    const SizedBox(height: 4),
-                    Text(
-                      md(entry.date),
-                      style: const TextStyle(fontSize: 11, color: DsColors.mutedInk),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class StoreSnapshot {
-  const StoreSnapshot({required this.store, required this.refresh, required this.onRefresh});
 
   final LocalStore store;
   final ValueNotifier<int> refresh;
@@ -377,7 +372,10 @@ class _WeekSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final now = DateTime.now();
     final start = DateTime(now.year, now.month, now.day - 3);
-    final days = List<DateTime>.generate(7, (index) => DateTime(start.year, start.month, start.day + index));
+    final days = List<DateTime>.generate(
+      7,
+      (index) => DateTime(start.year, start.month, start.day + index),
+    );
 
     return Column(
       children: [
@@ -395,9 +393,9 @@ class _WeekSection extends StatelessWidget {
             ),
             TextButton(
               onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('切换到“日历”页查看全部记录')),
-                );
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(const SnackBar(content: Text('切换到“日历”页查看全部记录')));
               },
               child: const Text(
                 '查看全部',
@@ -417,7 +415,9 @@ class _WeekSection extends StatelessWidget {
             final entries = snapshot.store.outfitsOn(day);
             return Expanded(
               child: Padding(
-                padding: EdgeInsets.only(right: index == days.length - 1 ? 0 : 6),
+                padding: EdgeInsets.only(
+                  right: index == days.length - 1 ? 0 : 6,
+                ),
                 child: _WeekDayCard(
                   day: day,
                   isToday: _isSameDay(day, now),
@@ -472,7 +472,9 @@ class _WeekDayCard extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(14),
           color: selected ? const Color(0xFFF8660A) : const Color(0xFFF1F3F5),
-          border: outlined ? Border.all(color: const Color(0xFFF8660A), width: 1.3) : null,
+          border: outlined
+              ? Border.all(color: const Color(0xFFF8660A), width: 1.3)
+              : null,
           boxShadow: selected
               ? const [
                   BoxShadow(
@@ -510,7 +512,9 @@ class _WeekDayCard extends StatelessWidget {
               decoration: BoxDecoration(
                 color: selected
                     ? const Color(0x33FFFFFF)
-                    : (hasRecord ? const Color(0x1AF8660A) : const Color(0xFFE4E8EE)),
+                    : (hasRecord
+                          ? const Color(0x1AF8660A)
+                          : const Color(0xFFE4E8EE)),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -518,7 +522,9 @@ class _WeekDayCard extends StatelessWidget {
                 size: 12,
                 color: selected
                     ? Colors.white
-                    : (hasRecord ? const Color(0xFFF8660A) : const Color(0xFFAAB4C4)),
+                    : (hasRecord
+                          ? const Color(0xFFF8660A)
+                          : const Color(0xFFAAB4C4)),
               ),
             ),
           ],

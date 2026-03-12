@@ -95,6 +95,7 @@ class _RootTabsState extends State<_RootTabs> {
         store: widget.store,
         refresh: widget.refresh,
         onRefresh: widget.onRefresh,
+        showBottomNav: false,
       ),
       ClosetPage(
         store: widget.store,

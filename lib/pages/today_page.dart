@@ -232,29 +232,29 @@ class _HeroCard extends StatelessWidget {
             ),
           ),
           Positioned(
-            right: 24,
-            bottom: 28,
+            right: 12,
+            bottom: 14,
             child: InkWell(
               onTap: onCameraTap,
-              borderRadius: BorderRadius.circular(28),
+              borderRadius: BorderRadius.circular(32),
               child: Container(
-                width: 84,
-                height: 84,
+                width: 58,
+                height: 58,
                 decoration: const BoxDecoration(
-                  color: Color(0xFFF9650A),
+                  color: Color.fromARGB(255, 236, 120, 48),
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
                       color: Color(0x30F9650A),
-                      blurRadius: 16,
-                      offset: Offset(0, 8),
+                      blurRadius: 18,
+                      offset: Offset(0, 9),
                     ),
                   ],
                 ),
                 child: const Icon(
                   Icons.camera_alt_outlined,
                   color: Colors.white,
-                  size: 34,
+                  size: 40,
                 ),
               ),
             ),

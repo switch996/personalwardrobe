@@ -1,5 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
+import '../design/app_bottom_nav.dart';
 import '../design/ds.dart';
 import '../design/widgets.dart';
 import '../models/closet_item.dart';
@@ -28,6 +29,7 @@ class VirtualClosetPage extends StatefulWidget {
 
 class _VirtualClosetPageState extends State<VirtualClosetPage> {
   bool _byType = true;
+  int _bottomNavIndex = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -62,10 +64,66 @@ class _VirtualClosetPageState extends State<VirtualClosetPage> {
               ],
             ),
           ),
-          bottomNavigationBar: _BottomNav(
-            store: widget.store,
-            refresh: widget.refresh,
-            onRefresh: widget.onRefresh,
+          bottomNavigationBar: AppBottomNav(
+            selectedIndex: _bottomNavIndex,
+            firstTab: AppBottomNavFirstTab.home,
+            onDestinationSelected: (value) async {
+              switch (value) {
+                case 0:
+                  setState(() {
+                    _bottomNavIndex = value;
+                  });
+                  Navigator.of(context).pop();
+                  break;
+                case 1:
+                  setState(() {
+                    _bottomNavIndex = value;
+                  });
+                  await Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => DiaryPage(
+                        store: widget.store,
+                        refresh: widget.refresh,
+                        onRefresh: widget.onRefresh,
+                        showBottomNav: true,
+                      ),
+                    ),
+                  );
+                  break;
+                case 2:
+                  final changed = await showClosetItemEditorSheet(
+                    context,
+                    store: widget.store,
+                  );
+                  if (changed == true) widget.onRefresh();
+                  break;
+                case 3:
+                  setState(() {
+                    _bottomNavIndex = value;
+                  });
+                  await Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => ClosetPage(
+                        store: widget.store,
+                        refresh: widget.refresh,
+                        onRefresh: widget.onRefresh,
+                      ),
+                    ),
+                  );
+                  break;
+                case 4:
+                  setState(() {
+                    _bottomNavIndex = value;
+                  });
+                  await Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          MePage(store: widget.store, refresh: widget.refresh),
+                    ),
+                  );
+                  break;
+              }
+            },
           ),
         );
       },
@@ -139,7 +197,11 @@ class _FilterSwitch extends StatelessWidget {
 }
 
 class _SwitchCell extends StatelessWidget {
-  const _SwitchCell({required this.selected, required this.text, required this.onTap});
+  const _SwitchCell({
+    required this.selected,
+    required this.text,
+    required this.onTap,
+  });
 
   final bool selected;
   final String text;
@@ -160,7 +222,11 @@ class _SwitchCell extends StatelessWidget {
             borderRadius: BorderRadius.circular(11),
             boxShadow: selected
                 ? const [
-                    BoxShadow(color: Color(0x15000000), blurRadius: 8, offset: Offset(0, 3)),
+                    BoxShadow(
+                      color: Color(0x15000000),
+                      blurRadius: 8,
+                      offset: Offset(0, 3),
+                    ),
                   ]
                 : null,
           ),
@@ -179,7 +245,11 @@ class _SwitchCell extends StatelessWidget {
 }
 
 class _TodayWearList extends StatelessWidget {
-  const _TodayWearList({required this.store, required this.refresh, required this.onRefresh});
+  const _TodayWearList({
+    required this.store,
+    required this.refresh,
+    required this.onRefresh,
+  });
 
   final LocalStore store;
   final ValueNotifier<int> refresh;
@@ -203,7 +273,11 @@ class _TodayWearList extends StatelessWidget {
           colors: [Color(0xFFFFFAF1), Color(0xFFFFF1DC)],
         ),
         boxShadow: const [
-          BoxShadow(color: Color(0x26F4A762), blurRadius: 24, offset: Offset(0, 14)),
+          BoxShadow(
+            color: Color(0x26F4A762),
+            blurRadius: 24,
+            offset: Offset(0, 14),
+          ),
         ],
       ),
       padding: const EdgeInsets.fromLTRB(20, 22, 20, 26),
@@ -214,24 +288,37 @@ class _TodayWearList extends StatelessWidget {
             children: [
               const Text(
                 '今日穿搭单品',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: DsColors.ink),
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                  color: DsColors.ink,
+                ),
               ),
               const SizedBox(width: 10),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: chipBackground,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   '${items.length} 件',
-                  style: const TextStyle(color: Color(0xFFB6610D), fontWeight: FontWeight.w700),
+                  style: const TextStyle(
+                    color: Color(0xFFB6610D),
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
               const Spacer(),
               Text(
                 dateLabel,
-                style: const TextStyle(color: Color(0xFF9A6D39), fontWeight: FontWeight.w600),
+                style: const TextStyle(
+                  color: Color(0xFF9A6D39),
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ],
           ),
@@ -239,12 +326,20 @@ class _TodayWearList extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.info_outline, size: 18, color: Color(0xFFF08232)),
+              const Icon(
+                Icons.info_outline,
+                size: 18,
+                color: Color(0xFFF08232),
+              ),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
                   '在单品详情点击“立刻穿上”添加，长按单品卡片可删除。',
-                  style: const TextStyle(color: Color(0xFFB1773F), fontSize: 13, height: 1.4),
+                  style: const TextStyle(
+                    color: Color(0xFFB1773F),
+                    fontSize: 13,
+                    height: 1.4,
+                  ),
                 ),
               ),
             ],
@@ -262,7 +357,10 @@ class _TodayWearList extends StatelessWidget {
               alignment: Alignment.centerLeft,
               child: const Text(
                 '今日还没有选定单品，去逛逛衣橱挑一件吧～',
-                style: TextStyle(color: Color(0xFFB1773F), fontWeight: FontWeight.w600),
+                style: TextStyle(
+                  color: Color(0xFFB1773F),
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             )
           else
@@ -309,7 +407,11 @@ class _TodayWearList extends StatelessWidget {
 }
 
 class _QuickWearItemCard extends StatefulWidget {
-  const _QuickWearItemCard({required this.item, required this.onTap, required this.onRemove});
+  const _QuickWearItemCard({
+    required this.item,
+    required this.onTap,
+    required this.onRemove,
+  });
 
   final ClosetItem item;
   final VoidCallback onTap;
@@ -359,7 +461,11 @@ class _QuickWearItemCardState extends State<_QuickWearItemCard> {
                     onLongPress: _handleLongPress,
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(24),
-                      child: AppImage(path: widget.item.imagePath, width: double.infinity, height: double.infinity),
+                      child: AppImage(
+                        path: widget.item.imagePath,
+                        width: double.infinity,
+                        height: double.infinity,
+                      ),
                     ),
                   ),
                 ),
@@ -520,7 +626,11 @@ class _FloatBoard extends StatelessWidget {
     return brand.isEmpty ? '未设置品牌' : brand;
   }
 
-  void _openList(BuildContext context, {required String category, ClosetItem? item}) {
+  void _openList(
+    BuildContext context, {
+    required String category,
+    ClosetItem? item,
+  }) {
     if (byType) {
       final title = '${LocalStore.categoryLabel(category)}列表';
       Navigator.of(context).push(
@@ -553,7 +663,9 @@ class _FloatBoard extends StatelessWidget {
 
   int _unmatchedTypeCount() {
     final displayed = LocalStore.closetCategories.toSet();
-    return store.closet.where((item) => !displayed.contains(item.category)).length;
+    return store.closet
+        .where((item) => !displayed.contains(item.category))
+        .length;
   }
 
   int _brandlessCount() {
@@ -561,15 +673,15 @@ class _FloatBoard extends StatelessWidget {
   }
 
   void _showMissingTypeNotice(BuildContext context, int count) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('当前有$count 件单品未匹配到展示类型，可前往衣橱补充分类')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('当前有$count 件单品未匹配到展示类型，可前往衣橱补充分类')));
   }
 
   void _showMissingBrandNotice(BuildContext context, int count) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('当前有$count 件单品未设置品牌，建议完善信息方便筛选')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('当前有$count 件单品未设置品牌，建议完善信息方便筛选')));
   }
 
   IconData _iconForCategory(String category) {
@@ -595,7 +707,12 @@ class _FloatBoard extends StatelessWidget {
 }
 
 class _FloatIcon extends StatefulWidget {
-  const _FloatIcon({required this.label, required this.icon, this.highlighted = false, this.onTap});
+  const _FloatIcon({
+    required this.label,
+    required this.icon,
+    this.highlighted = false,
+    this.onTap,
+  });
 
   final String label;
   final IconData icon;
@@ -616,45 +733,58 @@ class _FloatIconState extends State<_FloatIcon> {
       tween: Tween(begin: _forward ? -6 : 6, end: _forward ? 6 : -6),
       curve: Curves.easeInOut,
       onEnd: () => setState(() => _forward = !_forward),
-      builder: (context, value, child) => Transform.translate(offset: Offset(0, value), child: child),
+      builder: (context, value, child) =>
+          Transform.translate(offset: Offset(0, value), child: child),
       child: GestureDetector(
         onTap: widget.onTap,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-            width: widget.highlighted ? 84 : 70,
-            height: widget.highlighted ? 84 : 70,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white,
-              border: widget.highlighted ? Border.all(color: const Color(0xFFF2C7AE), width: 3) : null,
-              boxShadow: const [
-                BoxShadow(color: Color(0x14000000), blurRadius: 10, offset: Offset(0, 4)),
-              ],
+              width: widget.highlighted ? 84 : 70,
+              height: widget.highlighted ? 84 : 70,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white,
+                border: widget.highlighted
+                    ? Border.all(color: const Color(0xFFF2C7AE), width: 3)
+                    : null,
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x14000000),
+                    blurRadius: 10,
+                    offset: Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Icon(
+                widget.icon,
+                color: widget.highlighted ? DsColors.copper : DsColors.ink,
+                size: widget.highlighted ? 40 : 34,
+              ),
             ),
-            child: Icon(widget.icon, color: widget.highlighted ? DsColors.copper : DsColors.ink, size: widget.highlighted ? 40 : 34),
-          ),
-          const SizedBox(height: 6),
-          Container(
-            width: widget.highlighted ? 32 : 26,
-            height: 6,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(colors: [Color(0x1A000000), Color(0x05000000)]),
-              borderRadius: BorderRadius.all(Radius.circular(3)),
+            const SizedBox(height: 6),
+            Container(
+              width: widget.highlighted ? 32 : 26,
+              height: 6,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0x1A000000), Color(0x05000000)],
+                ),
+                borderRadius: BorderRadius.all(Radius.circular(3)),
+              ),
             ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            widget.label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: widget.highlighted ? DsColors.copper : DsColors.ink,
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
+            const SizedBox(height: 6),
+            Text(
+              widget.label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: widget.highlighted ? DsColors.copper : DsColors.ink,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+              ),
             ),
-          ),
           ],
         ),
       ),
@@ -709,7 +839,9 @@ class _CategoryListPageState extends State<CategoryListPage> {
           valueListenable: widget.refresh,
           builder: (context, value, _) {
             final items = _filteredItems();
-            final subOptions = widget.category == null ? const <String>[] : LocalStore.subCategoryOptions(widget.category!);
+            final subOptions = widget.category == null
+                ? const <String>[]
+                : LocalStore.subCategoryOptions(widget.category!);
             if (!subOptions.contains(_subFilter) && _subFilter != '全部') {
               _subFilter = '全部';
             }
@@ -720,7 +852,10 @@ class _CategoryListPageState extends State<CategoryListPage> {
                   children: [
                     IconButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+                      icon: const Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        size: 18,
+                      ),
                     ),
                     Expanded(
                       child: Column(
@@ -728,7 +863,11 @@ class _CategoryListPageState extends State<CategoryListPage> {
                         children: [
                           Text(
                             widget.title,
-                            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: DsColors.ink),
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w800,
+                              color: DsColors.ink,
+                            ),
                           ),
                           const SizedBox(height: 4),
                         ],
@@ -757,7 +896,8 @@ class _CategoryListPageState extends State<CategoryListPage> {
                           (label) => _FilterChip(
                             label: label,
                             selected: _subFilter == label,
-                            onSelected: () => setState(() => _subFilter = label),
+                            onSelected: () =>
+                                setState(() => _subFilter = label),
                           ),
                         ),
                       ],
@@ -768,19 +908,23 @@ class _CategoryListPageState extends State<CategoryListPage> {
                 if (items.isEmpty)
                   const Padding(
                     padding: EdgeInsets.only(top: 60),
-                    child: EmptyState(title: '暂无单品', caption: '尝试更换筛选或先去添加新单品吧'),
+                    child: EmptyState(
+                      title: '暂无单品',
+                      caption: '尝试更换筛选或先去添加新单品吧',
+                    ),
                   )
                 else
                   GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: items.length,
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 12,
-                      childAspectRatio: 0.74,
-                    ),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                          childAspectRatio: 0.74,
+                        ),
                     itemBuilder: (context, index) {
                       final item = items[index];
                       return InkWell(
@@ -802,7 +946,11 @@ class _CategoryListPageState extends State<CategoryListPage> {
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(24),
                             boxShadow: const [
-                              BoxShadow(color: DsColors.shadow, blurRadius: 16, offset: Offset(0, 8)),
+                              BoxShadow(
+                                color: DsColors.shadow,
+                                blurRadius: 16,
+                                offset: Offset(0, 8),
+                              ),
                             ],
                           ),
                           padding: const EdgeInsets.all(12),
@@ -812,7 +960,11 @@ class _CategoryListPageState extends State<CategoryListPage> {
                               Expanded(
                                 child: ClipRRect(
                                   borderRadius: BorderRadius.circular(20),
-                                  child: AppImage(path: item.imagePath, width: double.infinity, height: double.infinity),
+                                  child: AppImage(
+                                    path: item.imagePath,
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                  ),
                                 ),
                               ),
                               const SizedBox(height: 10),
@@ -820,12 +972,17 @@ class _CategoryListPageState extends State<CategoryListPage> {
                                 item.name,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(fontWeight: FontWeight.w700),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                ),
                               ),
                               const SizedBox(height: 4),
                               Text(
                                 '添加于 ${_formatDate(item.createdAt)}',
-                                style: const TextStyle(fontSize: 12, color: DsColors.mutedInk),
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: DsColors.mutedInk,
+                                ),
                               ),
                             ],
                           ),
@@ -844,10 +1001,16 @@ class _CategoryListPageState extends State<CategoryListPage> {
   List<ClosetItem> _filteredItems() {
     final query = _search.text.trim().toLowerCase();
     final filtered = widget.store.closet.where((item) {
-      if (widget.category != null && item.category != widget.category) return false;
-      if (widget.brand != null && item.brand.trim() != widget.brand) return false;
+      if (widget.category != null && item.category != widget.category) {
+        return false;
+      }
+      if (widget.brand != null && item.brand.trim() != widget.brand) {
+        return false;
+      }
       if (_subFilter != '全部' && item.subCategory != _subFilter) return false;
-      if (query.isNotEmpty && !item.name.toLowerCase().contains(query)) return false;
+      if (query.isNotEmpty && !item.name.toLowerCase().contains(query)) {
+        return false;
+      }
       return true;
     }).toList();
     filtered.sort((a, b) => b.createdAt.compareTo(a.createdAt));
@@ -881,7 +1044,11 @@ class _SearchField extends StatelessWidget {
 }
 
 class _FilterChip extends StatelessWidget {
-  const _FilterChip({required this.label, required this.selected, required this.onSelected});
+  const _FilterChip({
+    required this.label,
+    required this.selected,
+    required this.onSelected,
+  });
 
   final String label;
   final bool selected;
@@ -896,129 +1063,12 @@ class _FilterChip extends StatelessWidget {
         selected: selected,
         onSelected: (_) => onSelected(),
         selectedColor: DsColors.copper,
-        labelStyle: TextStyle(color: selected ? Colors.white : DsColors.ink, fontWeight: FontWeight.w600),
+        labelStyle: TextStyle(
+          color: selected ? Colors.white : DsColors.ink,
+          fontWeight: FontWeight.w600,
+        ),
         backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-      ),
-    );
-  }
-}
-
-class _BottomNav extends StatefulWidget {
-  const _BottomNav({required this.store, required this.refresh, required this.onRefresh});
-
-  final LocalStore store;
-  final ValueNotifier<int> refresh;
-  final VoidCallback onRefresh;
-
-  @override
-  State<_BottomNav> createState() => _BottomNavState();
-}
-
-class _BottomNavState extends State<_BottomNav> {
-  int _navIndex = 0;
-  double _addTurns = 0;
-
-  @override
-  Widget build(BuildContext context) {
-    return NavigationBar(
-      height: 70,
-      backgroundColor: DsColors.paper,
-      selectedIndex: _navIndex,
-      onDestinationSelected: (value) async {
-        switch (value) {
-          case 0:
-            setState(() {
-              _navIndex = value;
-            });
-            Navigator.of(context).pop();
-            break;
-          case 1:
-            setState(() {
-              _navIndex = value;
-            });
-              await Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => DiaryPage(
-                  store: widget.store,
-                  refresh: widget.refresh,
-                  onRefresh: widget.onRefresh,
-                  showBottomNav: true,
-                ),
-              ),
-            );
-            break;
-          case 2:
-            setState(() {
-              _addTurns += 1;
-            });
-            final changed = await showClosetItemEditorSheet(context, store: widget.store);
-            if (changed == true) widget.onRefresh();
-            break;
-          case 3:
-            setState(() {
-              _navIndex = value;
-            });
-            await Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => ClosetPage(
-                  store: widget.store,
-                  refresh: widget.refresh,
-                  onRefresh: widget.onRefresh,
-                ),
-              ),
-            );
-            break;
-          case 4:
-            setState(() {
-              _navIndex = value;
-            });
-            await Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => MePage(store: widget.store, refresh: widget.refresh),
-              ),
-            );
-            break;
-        }
-      },
-      destinations: [
-        const NavigationDestination(
-          icon: Icon(Icons.home_outlined),
-          selectedIcon: Icon(Icons.home),
-          label: '首页',
-        ),
-        const NavigationDestination(
-          icon: Icon(Icons.calendar_month_outlined),
-          selectedIcon: Icon(Icons.calendar_month),
-          label: '日历',
-        ),
-        NavigationDestination(
-          icon: _buildAddIcon(false),
-          selectedIcon: _buildAddIcon(true),
-          label: '',
-        ),
-        const NavigationDestination(
-          icon: Icon(Icons.checkroom_outlined),
-          selectedIcon: Icon(Icons.checkroom),
-          label: '衣橱',
-        ),
-        const NavigationDestination(
-          icon: Icon(Icons.person_outline),
-          selectedIcon: Icon(Icons.person),
-          label: '我的',
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAddIcon(bool selected) {
-    return AnimatedRotation(
-      turns: _addTurns,
-      duration: const Duration(milliseconds: 400),
-      child: Icon(
-        selected ? Icons.add_circle : Icons.add_circle_outline,
-        size: 34,
-        color: selected ? DsColors.copper : null,
       ),
     );
   }

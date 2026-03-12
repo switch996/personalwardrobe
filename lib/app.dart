@@ -1,5 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
+import 'design/app_bottom_nav.dart';
 import 'design/ds.dart';
 import 'pages/closet_page.dart';
 import 'pages/diary_page.dart';
@@ -51,9 +52,7 @@ class _WardrobeAppState extends State<WardrobeApp> {
       debugShowCheckedModeBanner: false,
       theme: Ds.themeData(),
       home: _loading
-          ? const Scaffold(
-              body: Center(child: CircularProgressIndicator()),
-            )
+          ? const Scaffold(body: Center(child: CircularProgressIndicator()))
           : _RootTabs(
               store: _store,
               refresh: _refresh,
@@ -81,7 +80,6 @@ class _RootTabs extends StatefulWidget {
 class _RootTabsState extends State<_RootTabs> {
   int _pageIndex = 0;
   int _navIndex = 0;
-  double _addTurns = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -107,15 +105,15 @@ class _RootTabsState extends State<_RootTabs> {
 
     return Scaffold(
       body: IndexedStack(index: _pageIndex, children: pages),
-      bottomNavigationBar: NavigationBar(
-        backgroundColor: DsColors.paper,
+      bottomNavigationBar: AppBottomNav(
         selectedIndex: _navIndex,
+        firstTab: AppBottomNavFirstTab.today,
         onDestinationSelected: (value) async {
           if (value == 2) {
-            setState(() {
-              _addTurns += 1;
-            });
-            final changed = await showClosetItemEditorSheet(context, store: widget.store);
+            final changed = await showClosetItemEditorSheet(
+              context,
+              store: widget.store,
+            );
             if (changed == true) widget.onRefresh();
             return;
           }
@@ -124,47 +122,7 @@ class _RootTabsState extends State<_RootTabs> {
             _pageIndex = value > 2 ? value - 1 : value;
           });
         },
-        destinations: [
-          const NavigationDestination(
-            icon: Icon(Icons.today_outlined),
-            selectedIcon: Icon(Icons.today),
-            label: '今日',
-          ),
-          const NavigationDestination(
-            icon: Icon(Icons.calendar_month_outlined),
-            selectedIcon: Icon(Icons.calendar_month),
-            label: '日历',
-          ),
-          NavigationDestination(
-            icon: _buildAddIcon(false),
-            selectedIcon: _buildAddIcon(true),
-            label: '',
-          ),
-          const NavigationDestination(
-            icon: Icon(Icons.checkroom_outlined),
-            selectedIcon: Icon(Icons.checkroom),
-            label: '衣橱',
-          ),
-          const NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person),
-            label: '我的',
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAddIcon(bool selected) {
-    return AnimatedRotation(
-      turns: _addTurns,
-      duration: const Duration(milliseconds: 400),
-      child: Icon(
-        selected ? Icons.add_circle : Icons.add_circle_outline,
-        size: 36,
-        color: selected ? DsColors.copper : null,
       ),
     );
   }
 }
-

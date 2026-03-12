@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../design/app_bottom_nav.dart';
 import '../design/ds.dart';
 import '../design/widgets.dart';
 import '../models/outfit_entry.dart';
@@ -31,6 +32,7 @@ class DiaryPage extends StatefulWidget {
 class _DiaryPageState extends State<DiaryPage> {
   DateTime _month = monthStart(DateTime.now());
   DateTime _selectedDay = DateTime.now();
+  int _bottomNavIndex = 1;
 
   @override
   Widget build(BuildContext context) {
@@ -90,10 +92,58 @@ class _DiaryPageState extends State<DiaryPage> {
             ),
           ),
           bottomNavigationBar: widget.showBottomNav
-              ? _BottomNav(
-                  store: widget.store,
-                  refresh: widget.refresh,
-                  onRefresh: widget.onRefresh,
+              ? AppBottomNav(
+                  selectedIndex: _bottomNavIndex,
+                  firstTab: AppBottomNavFirstTab.home,
+                  onDestinationSelected: (value) async {
+                    switch (value) {
+                      case 0:
+                        setState(() {
+                          _bottomNavIndex = value;
+                        });
+                        Navigator.of(context).pop();
+                        break;
+                      case 1:
+                        setState(() {
+                          _bottomNavIndex = value;
+                        });
+                        break;
+                      case 2:
+                        final changed = await showClosetItemEditorSheet(
+                          context,
+                          store: widget.store,
+                        );
+                        if (changed == true) widget.onRefresh();
+                        break;
+                      case 3:
+                        setState(() {
+                          _bottomNavIndex = value;
+                        });
+                        await Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => ClosetPage(
+                              store: widget.store,
+                              refresh: widget.refresh,
+                              onRefresh: widget.onRefresh,
+                            ),
+                          ),
+                        );
+                        break;
+                      case 4:
+                        setState(() {
+                          _bottomNavIndex = value;
+                        });
+                        await Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => MePage(
+                              store: widget.store,
+                              refresh: widget.refresh,
+                            ),
+                          ),
+                        );
+                        break;
+                    }
+                  },
                 )
               : null,
         );
@@ -492,124 +542,6 @@ class _DailyOutfitCard extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _BottomNav extends StatefulWidget {
-  const _BottomNav({
-    required this.store,
-    required this.refresh,
-    required this.onRefresh,
-  });
-
-  final LocalStore store;
-  final ValueNotifier<int> refresh;
-  final VoidCallback onRefresh;
-
-  @override
-  State<_BottomNav> createState() => _BottomNavState();
-}
-
-class _BottomNavState extends State<_BottomNav> {
-  int _navIndex = 1;
-  double _addTurns = 0;
-
-  @override
-  Widget build(BuildContext context) {
-    return NavigationBar(
-      height: 70,
-      backgroundColor: DsColors.paper,
-      selectedIndex: _navIndex,
-      onDestinationSelected: (value) async {
-        switch (value) {
-          case 0:
-            setState(() {
-              _navIndex = value;
-            });
-            Navigator.of(context).pop();
-            break;
-          case 1:
-            setState(() {
-              _navIndex = value;
-            });
-            break;
-          case 2:
-            setState(() {
-              _addTurns += 1;
-            });
-            final changed = await showClosetItemEditorSheet(
-              context,
-              store: widget.store,
-            );
-            if (changed == true) widget.onRefresh();
-            break;
-          case 3:
-            setState(() {
-              _navIndex = value;
-            });
-            await Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => ClosetPage(
-                  store: widget.store,
-                  refresh: widget.refresh,
-                  onRefresh: widget.onRefresh,
-                ),
-              ),
-            );
-            break;
-          case 4:
-            setState(() {
-              _navIndex = value;
-            });
-            await Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) =>
-                    MePage(store: widget.store, refresh: widget.refresh),
-              ),
-            );
-            break;
-        }
-      },
-      destinations: [
-        const NavigationDestination(
-          icon: Icon(Icons.home_outlined),
-          selectedIcon: Icon(Icons.home),
-          label: '首页',
-        ),
-        const NavigationDestination(
-          icon: Icon(Icons.calendar_month_outlined),
-          selectedIcon: Icon(Icons.calendar_month),
-          label: '日历',
-        ),
-        NavigationDestination(
-          icon: _buildAddIcon(false),
-          selectedIcon: _buildAddIcon(true),
-          label: '',
-        ),
-        const NavigationDestination(
-          icon: Icon(Icons.checkroom_outlined),
-          selectedIcon: Icon(Icons.checkroom),
-          label: '衣橱',
-        ),
-        const NavigationDestination(
-          icon: Icon(Icons.person_outline),
-          selectedIcon: Icon(Icons.person),
-          label: '我的',
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAddIcon(bool selected) {
-    return AnimatedRotation(
-      turns: _addTurns,
-      duration: const Duration(milliseconds: 400),
-      child: Icon(
-        selected ? Icons.add_circle : Icons.add_circle_outline,
-        size: 34,
-        color: selected ? DsColors.copper : null,
       ),
     );
   }

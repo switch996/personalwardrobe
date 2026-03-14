@@ -1,0 +1,38 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api/v1
+
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/personal_wardrobe}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  flyway:
+    enabled: true
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:cGVyc29uYWwtd2FyZHJvYmUtand0LXNlY3JldC1rZXktZm9yLWRldg==}
+    access-token-expiration-seconds: 3600
+    refresh-token-expiration-seconds: 2592000
+  media:
+    storage-path: ${MEDIA_STORAGE_PATH:./uploads}
+    base-url: ${MEDIA_BASE_URL:/uploads}
+  auth:
+    dev-bypass:
+      enabled: ${AUTH_DEV_BYPASS_ENABLED:false}
+      user-id: ${AUTH_DEV_USER_ID:dev_user}
+      phone: ${AUTH_DEV_PHONE:13800000000}

@@ -1,0 +1,19 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://127.0.0.1:5432/clothes_datasource
+    username: root
+    password: root
+  mvc:
+    log-request-details: true
+
+app:
+  auth:
+    dev-bypass:
+      enabled: true
+      user-id: dev_user
+      phone: 13800000000
+      
+logging:
+  level:
+    org.springframework.web: DEBUG
+    org.springframework.web.servlet.DispatcherServlet: DEBUG

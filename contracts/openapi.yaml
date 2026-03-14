@@ -1,0 +1,1034 @@
+openapi: 3.0.3
+info:
+  title: Personal Wardrobe API
+  version: 1.0.0
+  description: V1 API contract for Personal Wardrobe App.
+servers:
+  - url: /api/v1
+    description: V1 base URL
+tags:
+  - name: auth
+  - name: outfits
+  - name: closet-items
+  - name: media
+  - name: sync
+security:
+  - BearerAuth: []
+paths:
+  /auth/sms/send:
+    post:
+      tags: [auth]
+      summary: Send SMS verification code
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SmsSendRequest'
+      responses:
+        '200':
+          description: SMS sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SmsSendResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /auth/sms/verify:
+    post:
+      tags: [auth]
+      summary: Verify SMS code and login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SmsVerifyRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthTokenResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /auth/refresh:
+    post:
+      tags: [auth]
+      summary: Refresh JWT tokens
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenRequest'
+      responses:
+        '200':
+          description: Tokens refreshed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthTokenResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /auth/logout:
+    post:
+      tags: [auth]
+      summary: Logout current session
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /me:
+    get:
+      tags: [auth]
+      summary: Get current user profile
+      responses:
+        '200':
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /outfits:
+    post:
+      tags: [outfits]
+      summary: Create outfit record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OutfitCreateRequest'
+      responses:
+        '201':
+          description: Outfit created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Outfit'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    get:
+      tags: [outfits]
+      summary: List outfit records
+      parameters:
+        - name: dateFrom
+          in: query
+          description: Start date (inclusive), format YYYY-MM-DD
+          schema:
+            type: string
+            format: date
+        - name: dateTo
+          in: query
+          description: End date (inclusive), format YYYY-MM-DD
+          schema:
+            type: string
+            format: date
+        - name: tag
+          in: query
+          description: Filter by one tag
+          schema:
+            type: string
+        - name: closetItemId
+          in: query
+          description: Filter by closet item ID
+          schema:
+            type: string
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum: [date, createdAt, updatedAt]
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+      responses:
+        '200':
+          description: Paged outfits
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OutfitListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /outfits/{id}:
+    get:
+      tags: [outfits]
+      summary: Get outfit detail
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      responses:
+        '200':
+          description: Outfit detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Outfit'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags: [outfits]
+      summary: Update outfit record
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OutfitUpdateRequest'
+      responses:
+        '200':
+          description: Outfit updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Outfit'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags: [outfits]
+      summary: Delete outfit record
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      responses:
+        '200':
+          description: Outfit deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /closet-items:
+    post:
+      tags: [closet-items]
+      summary: Create closet item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClosetItemCreateRequest'
+      responses:
+        '201':
+          description: Closet item created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClosetItem'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    get:
+      tags: [closet-items]
+      summary: List closet items
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+            enum: [top, bottom, shoes, accessory, outerwear, dress, bag]
+        - name: keyword
+          in: query
+          description: Search by name or note
+          schema:
+            type: string
+        - name: color
+          in: query
+          schema:
+            type: string
+        - name: brand
+          in: query
+          schema:
+            type: string
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum: [name, category, createdAt, updatedAt]
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+      responses:
+        '200':
+          description: Paged closet items
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClosetItemListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /closet-items/{id}:
+    get:
+      tags: [closet-items]
+      summary: Get closet item detail
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      responses:
+        '200':
+          description: Closet item detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClosetItem'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags: [closet-items]
+      summary: Update closet item
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClosetItemUpdateRequest'
+      responses:
+        '200':
+          description: Closet item updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClosetItem'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags: [closet-items]
+      summary: Delete closet item
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      responses:
+        '200':
+          description: Closet item deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /media/upload:
+    post:
+      tags: [media]
+      summary: Upload media image
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MediaUploadRequest'
+      responses:
+        '201':
+          description: Media uploaded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Media'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /media/{id}:
+    get:
+      tags: [media]
+      summary: Get media detail
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      responses:
+        '200':
+          description: Media detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Media'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags: [media]
+      summary: Delete media
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      responses:
+        '200':
+          description: Media deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /sync/changes:
+    get:
+      tags: [sync]
+      summary: Pull incremental changes since a given time
+      parameters:
+        - name: since
+          in: query
+          required: true
+          description: ISO 8601 timestamp, exclusive lower bound for updatedAt
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Incremental changes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyncChangesResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    IdPath:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+    Page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    PageSize:
+      name: pageSize
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  schemas:
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+      example:
+        code: VALIDATION_ERROR
+        message: Invalid request payload.
+        details:
+          field: phone
+          reason: invalid_format
+
+    MessageResponse:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+      example:
+        message: OK
+
+    DeleteResponse:
+      type: object
+      required: [id, deletedAt]
+      properties:
+        id:
+          type: string
+        deletedAt:
+          type: string
+          format: date-time
+      example:
+        id: outfit_123
+        deletedAt: '2026-03-13T08:00:00Z'
+
+    SmsSendRequest:
+      type: object
+      required: [phone]
+      properties:
+        phone:
+          type: string
+      example:
+        phone: '+15551234567'
+
+    SmsSendResponse:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+      example:
+        message: Verification code sent.
+
+    SmsVerifyRequest:
+      type: object
+      required: [phone, code]
+      properties:
+        phone:
+          type: string
+        code:
+          type: string
+      example:
+        phone: '+15551234567'
+        code: '123456'
+
+    RefreshTokenRequest:
+      type: object
+      required: [refreshToken]
+      properties:
+        refreshToken:
+          type: string
+      example:
+        refreshToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.refresh
+
+    LogoutRequest:
+      type: object
+      properties:
+        refreshToken:
+          type: string
+      example:
+        refreshToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.refresh
+
+    AuthTokenResponse:
+      type: object
+      required: [accessToken, refreshToken, tokenType, expiresIn, user]
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        tokenType:
+          type: string
+          enum: [Bearer]
+        expiresIn:
+          type: integer
+          description: Access token expiration in seconds
+        user:
+          $ref: '#/components/schemas/User'
+      example:
+        accessToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.access
+        refreshToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.refresh
+        tokenType: Bearer
+        expiresIn: 3600
+        user:
+          id: user_123
+          phone: '+15551234567'
+          createdAt: '2026-03-01T10:00:00Z'
+          updatedAt: '2026-03-13T08:00:00Z'
+
+    User:
+      type: object
+      required: [id, phone, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        phone:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      example:
+        id: user_123
+        phone: '+15551234567'
+        createdAt: '2026-03-01T10:00:00Z'
+        updatedAt: '2026-03-13T08:00:00Z'
+
+    Outfit:
+      type: object
+      required: [id, date, tags, closetItemIds, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        date:
+          type: string
+          format: date
+        note:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        imageUrl:
+          type: string
+          format: uri
+        imageMediaId:
+          type: string
+        closetItemIds:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        deletedAt:
+          type: string
+          format: date-time
+          nullable: true
+      example:
+        id: outfit_123
+        date: '2026-03-13'
+        note: Office casual look.
+        tags: [office, spring]
+        imageUrl: https://cdn.example.com/outfits/outfit_123.jpg
+        imageMediaId: media_789
+        closetItemIds: [item_101, item_102]
+        createdAt: '2026-03-13T08:00:00Z'
+        updatedAt: '2026-03-13T09:00:00Z'
+        deletedAt: null
+
+    OutfitCreateRequest:
+      type: object
+      required: [date]
+      properties:
+        date:
+          type: string
+          format: date
+        note:
+          type: string
+          default: ''
+        tags:
+          type: array
+          items:
+            type: string
+        imageUrl:
+          type: string
+          format: uri
+        closetItemIds:
+          type: array
+          items:
+            type: string
+          default: []
+      example:
+        date: '2026-03-13'
+        note: Office casual look.
+        tags: [office, spring]
+        imageUrl: https://cdn.example.com/outfits/outfit_123.jpg
+        closetItemIds: [item_101, item_102]
+
+    OutfitUpdateRequest:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        note:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        imageUrl:
+          type: string
+          format: uri
+        closetItemIds:
+          type: array
+          items:
+            type: string
+      example:
+        note: Updated for rainy weather.
+        tags: [office, rainy]
+
+    OutfitListResponse:
+      type: object
+      required: [items, page, pageSize, total]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Outfit'
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        total:
+          type: integer
+      example:
+        items:
+          - id: outfit_123
+            date: '2026-03-13'
+            note: Office casual look.
+            tags: [office, spring]
+            imageUrl: https://cdn.example.com/outfits/outfit_123.jpg
+            closetItemIds: [item_101, item_102]
+            createdAt: '2026-03-13T08:00:00Z'
+            updatedAt: '2026-03-13T09:00:00Z'
+            deletedAt: null
+        page: 1
+        pageSize: 20
+        total: 1
+
+    ClosetItem:
+      type: object
+      required: [id, name, category, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        category:
+          type: string
+          enum: [top, bottom, shoes, accessory, outerwear, dress, bag]
+        brand:
+          type: string
+        color:
+          type: string
+        note:
+          type: string
+        imageUrl:
+          type: string
+          format: uri
+        imageMediaId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        deletedAt:
+          type: string
+          format: date-time
+          nullable: true
+      example:
+        id: item_101
+        name: White Oxford Shirt
+        category: top
+        brand: Uniqlo
+        color: white
+        note: Slim fit.
+        imageUrl: https://cdn.example.com/items/item_101.jpg
+        imageMediaId: media_790
+        createdAt: '2026-03-10T08:00:00Z'
+        updatedAt: '2026-03-13T09:00:00Z'
+        deletedAt: null
+
+    ClosetItemCreateRequest:
+      type: object
+      required: [name, category]
+      properties:
+        name:
+          type: string
+        category:
+          type: string
+          enum: [top, bottom, shoes, accessory, outerwear, dress, bag]
+        brand:
+          type: string
+        color:
+          type: string
+        note:
+          type: string
+        imageUrl:
+          type: string
+          format: uri
+      example:
+        name: White Oxford Shirt
+        category: top
+        brand: Uniqlo
+        color: white
+        note: Slim fit.
+        imageUrl: https://cdn.example.com/items/item_101.jpg
+
+    ClosetItemUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        category:
+          type: string
+          enum: [top, bottom, shoes, accessory, outerwear, dress, bag]
+        brand:
+          type: string
+        color:
+          type: string
+        note:
+          type: string
+        imageUrl:
+          type: string
+          format: uri
+      example:
+        color: off-white
+        note: Updated fabric note.
+
+    ClosetItemListResponse:
+      type: object
+      required: [items, page, pageSize, total]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClosetItem'
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        total:
+          type: integer
+      example:
+        items:
+          - id: item_101
+            name: White Oxford Shirt
+            category: top
+            brand: Uniqlo
+            color: white
+            note: Slim fit.
+            imageUrl: https://cdn.example.com/items/item_101.jpg
+            imageMediaId: media_790
+            createdAt: '2026-03-10T08:00:00Z'
+            updatedAt: '2026-03-13T09:00:00Z'
+            deletedAt: null
+        page: 1
+        pageSize: 20
+        total: 1
+
+    Media:
+      type: object
+      required: [id, url, contentType, size, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        url:
+          type: string
+          format: uri
+        contentType:
+          type: string
+        size:
+          type: integer
+        width:
+          type: integer
+        height:
+          type: integer
+        thumbnailUrl:
+          type: string
+          format: uri
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      example:
+        id: media_789
+        url: https://cdn.example.com/media/media_789.jpg
+        contentType: image/jpeg
+        size: 245612
+        width: 1080
+        height: 1440
+        thumbnailUrl: https://cdn.example.com/media/thumb_media_789.jpg
+        createdAt: '2026-03-13T08:30:00Z'
+        updatedAt: '2026-03-13T08:30:00Z'
+
+    MediaUploadRequest:
+      type: object
+      required: [file]
+      properties:
+        file:
+          type: string
+          format: binary
+      example:
+        file: binary-image-data
+
+    SyncChangesResponse:
+      type: object
+      required:
+        - outfits
+        - closetItems
+        - deletedOutfitIds
+        - deletedClosetItemIds
+        - serverTime
+        - nextSince
+      properties:
+        outfits:
+          type: array
+          items:
+            $ref: '#/components/schemas/Outfit'
+        closetItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClosetItem'
+        deletedOutfitIds:
+          type: array
+          items:
+            type: string
+        deletedClosetItemIds:
+          type: array
+          items:
+            type: string
+        serverTime:
+          type: string
+          format: date-time
+        nextSince:
+          type: string
+          format: date-time
+      example:
+        outfits:
+          - id: outfit_123
+            date: '2026-03-13'
+            note: Office casual look.
+            tags: [office, spring]
+            imageUrl: https://cdn.example.com/outfits/outfit_123.jpg
+            imageMediaId: media_789
+            closetItemIds: [item_101, item_102]
+            createdAt: '2026-03-13T08:00:00Z'
+            updatedAt: '2026-03-13T09:00:00Z'
+            deletedAt: null
+        closetItems:
+          - id: item_101
+            name: White Oxford Shirt
+            category: top
+            brand: Uniqlo
+            color: white
+            note: Slim fit.
+            imageUrl: https://cdn.example.com/items/item_101.jpg
+            imageMediaId: media_790
+            createdAt: '2026-03-10T08:00:00Z'
+            updatedAt: '2026-03-13T09:00:00Z'
+            deletedAt: null
+        deletedOutfitIds: [outfit_119]
+        deletedClosetItemIds: [item_099]
+        serverTime: '2026-03-13T10:00:00Z'
+        nextSince: '2026-03-13T10:00:00Z'

@@ -140,7 +140,41 @@ class AppImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (path.isEmpty || !File(path).existsSync()) {
+    if (path.isEmpty) {
+      return Container(
+        width: width,
+        height: height,
+        decoration: BoxDecoration(
+          borderRadius: radius,
+          color: DsColors.paperDeep,
+          border: Border.all(color: DsColors.line),
+        ),
+        child: const Center(
+          child: Icon(Icons.photo_outlined, color: DsColors.mutedInk),
+        ),
+      );
+    }
+
+    if (_isNetworkPath(path)) {
+      return ClipRRect(
+        borderRadius: radius,
+        child: Image.network(
+          path,
+          width: width,
+          height: height,
+          fit: fit,
+          errorBuilder: (context, error, stackTrace) => Container(
+            width: width,
+            height: height,
+            color: DsColors.paperDeep,
+            alignment: Alignment.center,
+            child: const Icon(Icons.broken_image_outlined),
+          ),
+        ),
+      );
+    }
+
+    if (!File(path).existsSync()) {
       return Container(
         width: width,
         height: height,
@@ -171,6 +205,10 @@ class AppImage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  bool _isNetworkPath(String value) {
+    return value.startsWith('http://') || value.startsWith('https://');
   }
 }
 

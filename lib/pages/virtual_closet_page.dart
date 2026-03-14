@@ -960,7 +960,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
                           ),
                           padding: const EdgeInsets.all(12),
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               Expanded(
                                 child: ClipRRect(
@@ -977,6 +977,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
                                 item.name,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
                                 style: const TextStyle(
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -984,6 +985,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
                               const SizedBox(height: 4),
                               Text(
                                 '添加于 ${_formatDate(item.createdAt)}',
+                                textAlign: TextAlign.center,
                                 style: const TextStyle(
                                   fontSize: 12,
                                   color: DsColors.mutedInk,

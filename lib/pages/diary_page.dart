@@ -73,6 +73,7 @@ class _DiaryPageState extends State<DiaryPage> {
                     selectedDay: _selectedDay,
                     entries: widget.store.outfits,
                     onPrevMonth: () => _shiftMonth(-1),
+                    onNextMonth: () => _shiftMonth(1),
                     onSelectDay: (date) {
                       setState(() {
                         _selectedDay = date;
@@ -176,6 +177,7 @@ class _CalendarView extends StatelessWidget {
     required this.selectedDay,
     required this.entries,
     required this.onPrevMonth,
+    required this.onNextMonth,
     required this.onSelectDay,
   });
 
@@ -183,6 +185,7 @@ class _CalendarView extends StatelessWidget {
   final DateTime selectedDay;
   final List<OutfitEntry> entries;
   final VoidCallback onPrevMonth;
+  final VoidCallback onNextMonth;
   final ValueChanged<DateTime> onSelectDay;
 
   @override
@@ -421,7 +424,16 @@ class _CalendarView extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: 36),
+              IconButton(
+                onPressed: onNextMonth,
+                visualDensity: VisualDensity.compact,
+                constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                iconSize: 18,
+                icon: const Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  color: Color(0xFFF07212),
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 2),

@@ -82,7 +82,13 @@ class ClosetItemDetailPage extends StatelessWidget {
                 boxShadow: const [BoxShadow(color: DsColors.shadow, blurRadius: 25, offset: Offset(0, 14))],
               ),
               padding: const EdgeInsets.all(12),
-              child: AppImage(path: item.imagePath, height: 280, width: double.infinity, radius: BorderRadius.circular(22)),
+              child: AppImage(
+                path: item.imagePath,
+                height: 280,
+                width: double.infinity,
+                fit: BoxFit.contain,
+                radius: BorderRadius.circular(22),
+              ),
             ),
             const SizedBox(height: 20),
             Row(

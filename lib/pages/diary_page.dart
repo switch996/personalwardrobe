@@ -34,13 +34,32 @@ class _DiaryPageState extends State<DiaryPage> {
   DateTime _selectedDay = DateTime.now();
   int _bottomNavIndex = 1;
 
+  OutfitEntry? _entryForSelectedDay() {
+    final dayEntries = widget.store.outfitsOn(_selectedDay);
+    if (dayEntries.isEmpty) return null;
+    dayEntries.sort((a, b) {
+      final dateCompare = b.date.compareTo(a.date);
+      if (dateCompare != 0) return dateCompare;
+      return b.id.compareTo(a.id);
+    });
+    return dayEntries.first;
+  }
+
+  void _shiftMonth(int delta) {
+    final nextMonth = addMonth(_month, delta);
+    final nextDay = _selectedDay.day.clamp(1, monthDays(nextMonth)).toInt();
+    setState(() {
+      _month = nextMonth;
+      _selectedDay = DateTime(nextMonth.year, nextMonth.month, nextDay);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<int>(
       valueListenable: widget.refresh,
       builder: (context, value, child) {
-        final dayEntries = widget.store.outfitsOn(_selectedDay);
-        final entry = dayEntries.isEmpty ? null : dayEntries.first;
+        final entry = _entryForSelectedDay();
 
         return Scaffold(
           backgroundColor: DsColors.paper,
@@ -53,11 +72,7 @@ class _DiaryPageState extends State<DiaryPage> {
                     month: _month,
                     selectedDay: _selectedDay,
                     entries: widget.store.outfits,
-                    onPrevMonth: () {
-                      setState(() {
-                        _month = addMonth(_month, -1);
-                      });
-                    },
+                    onPrevMonth: () => _shiftMonth(-1),
                     onSelectDay: (date) {
                       setState(() {
                         _selectedDay = date;
@@ -125,6 +140,7 @@ class _DiaryPageState extends State<DiaryPage> {
                               store: widget.store,
                               refresh: widget.refresh,
                               onRefresh: widget.onRefresh,
+                              showBottomNav: true,
                             ),
                           ),
                         );
@@ -138,6 +154,8 @@ class _DiaryPageState extends State<DiaryPage> {
                             builder: (_) => MePage(
                               store: widget.store,
                               refresh: widget.refresh,
+                              onRefresh: widget.onRefresh,
+                              showBottomNav: true,
                             ),
                           ),
                         );

@@ -116,9 +116,15 @@ class BackendApi {
     if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
       return trimmed;
     }
+
+    final apiPath = Uri.parse(_baseUrl).path.replaceAll(RegExp(r'/+$'), '');
     if (trimmed.startsWith('/')) {
+      if (apiPath.isNotEmpty && !trimmed.startsWith('$apiPath/')) {
+        return '$_origin$apiPath$trimmed';
+      }
       return '$_origin$trimmed';
     }
+
     return '$_origin/$trimmed';
   }
 
@@ -359,3 +365,4 @@ class BackendApiException implements Exception {
     return 'BackendApiException(status=$statusCode, code=$code, message=$message)';
   }
 }
+

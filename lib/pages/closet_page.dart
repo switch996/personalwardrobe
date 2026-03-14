@@ -2,11 +2,15 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../design/app_bottom_nav.dart';
 import '../design/ds.dart';
 import '../design/widgets.dart';
 import '../models/closet_item.dart';
+import '../sheets/closet_item_editor_sheet.dart';
 import '../store/local_store.dart';
 import 'closet_item_detail_page.dart';
+import 'diary_page.dart';
+import 'me_page.dart';
 import 'virtual_closet_page.dart';
 
 class ClosetPage extends StatefulWidget {
@@ -15,11 +19,13 @@ class ClosetPage extends StatefulWidget {
     required this.store,
     required this.refresh,
     required this.onRefresh,
+    this.showBottomNav = false,
   });
 
   final LocalStore store;
   final ValueNotifier<int> refresh;
   final VoidCallback onRefresh;
+  final bool showBottomNav;
 
   @override
   State<ClosetPage> createState() => _ClosetPageState();
@@ -28,6 +34,7 @@ class ClosetPage extends StatefulWidget {
 class _ClosetPageState extends State<ClosetPage> {
   _ClosetViewMode _viewMode = _ClosetViewMode.closet;
   _OverviewMetric _metric = _OverviewMetric.count;
+  int _bottomNavIndex = 3;
 
   @override
   Widget build(BuildContext context) {
@@ -51,6 +58,64 @@ class _ClosetPageState extends State<ClosetPage> {
               ),
             ),
           ),
+          bottomNavigationBar: widget.showBottomNav
+              ? AppBottomNav(
+                  selectedIndex: _bottomNavIndex,
+                  firstTab: AppBottomNavFirstTab.home,
+                  onDestinationSelected: (value) async {
+                    switch (value) {
+                      case 0:
+                        setState(() {
+                          _bottomNavIndex = value;
+                        });
+                        Navigator.of(context).pop();
+                        break;
+                      case 1:
+                        setState(() {
+                          _bottomNavIndex = value;
+                        });
+                        await Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => DiaryPage(
+                              store: widget.store,
+                              refresh: widget.refresh,
+                              onRefresh: widget.onRefresh,
+                              showBottomNav: true,
+                            ),
+                          ),
+                        );
+                        break;
+                      case 2:
+                        final changed = await showClosetItemEditorSheet(
+                          context,
+                          store: widget.store,
+                        );
+                        if (changed == true) widget.onRefresh();
+                        break;
+                      case 3:
+                        setState(() {
+                          _bottomNavIndex = value;
+                        });
+                        break;
+                      case 4:
+                        setState(() {
+                          _bottomNavIndex = value;
+                        });
+                        await Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => MePage(
+                              store: widget.store,
+                              refresh: widget.refresh,
+                              onRefresh: widget.onRefresh,
+                              showBottomNav: true,
+                            ),
+                          ),
+                        );
+                        break;
+                    }
+                  },
+                )
+              : null,
           body: SafeArea(
             top: false,
             child: DecoratedBox(

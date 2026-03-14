@@ -107,6 +107,7 @@ class _VirtualClosetPageState extends State<VirtualClosetPage> {
                         store: widget.store,
                         refresh: widget.refresh,
                         onRefresh: widget.onRefresh,
+                        showBottomNav: true,
                       ),
                     ),
                   );
@@ -117,8 +118,12 @@ class _VirtualClosetPageState extends State<VirtualClosetPage> {
                   });
                   await Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (_) =>
-                          MePage(store: widget.store, refresh: widget.refresh),
+                      builder: (_) => MePage(
+                        store: widget.store,
+                        refresh: widget.refresh,
+                        onRefresh: widget.onRefresh,
+                        showBottomNav: true,
+                      ),
                     ),
                   );
                   break;

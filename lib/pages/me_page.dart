@@ -1,30 +1,151 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
+import '../design/app_bottom_nav.dart';
 import '../design/ds.dart';
+import '../pages/closet_page.dart';
+import '../pages/diary_page.dart';
+import '../sheets/closet_item_editor_sheet.dart';
 import '../store/local_store.dart';
 import '../utils/dialog.dart';
 
-class MePage extends StatelessWidget {
-  const MePage({super.key, required this.store, required this.refresh});
+class MePage extends StatefulWidget {
+  const MePage({
+    super.key,
+    required this.store,
+    required this.refresh,
+    this.onRefresh,
+    this.showBottomNav = false,
+  });
 
   final LocalStore store;
   final ValueNotifier<int> refresh;
+  final VoidCallback? onRefresh;
+  final bool showBottomNav;
+
+  @override
+  State<MePage> createState() => _MePageState();
+}
+
+class _MePageState extends State<MePage> {
+  int _bottomNavIndex = 4;
+  final ImagePicker _picker = ImagePicker();
+
+  Future<void> _pickAvatar() async {
+    final action = await showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.photo_library_outlined),
+                title: const Text('从相册选择'),
+                onTap: () => Navigator.of(context).pop('gallery'),
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_camera_outlined),
+                title: const Text('打开相机'),
+                onTap: () => Navigator.of(context).pop('camera'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (!mounted || action == null) return;
+    final source = action == 'camera' ? ImageSource.camera : ImageSource.gallery;
+    final file = await _picker.pickImage(source: source, imageQuality: 85);
+    if (file == null) return;
+
+    try {
+      await widget.store.updateUserAvatar(file.path);
+      if (!mounted) return;
+      setState(() {});
+    } catch (_) {
+      if (!mounted) return;
+      showSnack(context, '头像上传失败，请稍后重试');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<int>(
-      valueListenable: refresh,
+      valueListenable: widget.refresh,
       builder: (context, value, child) {
-        final closetCount = store.closet.length;
-        final outfitDays = _outfitDaysCount(store);
-        final mostWorn = _mostWornItemName(store);
+        final closetCount = widget.store.closet.length;
+        final outfitDays = _outfitDaysCount(widget.store);
+        final mostWorn = _mostWornItemName(widget.store);
         final usedStorageLabel =
-            '${_storageUsageMb(store).toStringAsFixed(0)}MB / 2GB';
+            '${_storageUsageMb(widget.store).toStringAsFixed(0)}MB / 2GB';
 
         return Scaffold(
           backgroundColor: DsColors.paper,
+          bottomNavigationBar: widget.showBottomNav
+              ? AppBottomNav(
+                  selectedIndex: _bottomNavIndex,
+                  firstTab: AppBottomNavFirstTab.home,
+                  onDestinationSelected: (value) async {
+                    switch (value) {
+                      case 0:
+                        setState(() {
+                          _bottomNavIndex = value;
+                        });
+                        Navigator.of(context).pop();
+                        break;
+                      case 1:
+                        setState(() {
+                          _bottomNavIndex = value;
+                        });
+                        await Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => DiaryPage(
+                              store: widget.store,
+                              refresh: widget.refresh,
+                              onRefresh: widget.onRefresh ?? () {},
+                              showBottomNav: true,
+                            ),
+                          ),
+                        );
+                        break;
+                      case 2:
+                        final changed = await showClosetItemEditorSheet(
+                          context,
+                          store: widget.store,
+                        );
+                        if (changed == true) {
+                          widget.onRefresh?.call();
+                        }
+                        break;
+                      case 3:
+                        setState(() {
+                          _bottomNavIndex = value;
+                        });
+                        await Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => ClosetPage(
+                              store: widget.store,
+                              refresh: widget.refresh,
+                              onRefresh: widget.onRefresh ?? () {},
+                              showBottomNav: true,
+                            ),
+                          ),
+                        );
+                        break;
+                      case 4:
+                        setState(() {
+                          _bottomNavIndex = value;
+                        });
+                        break;
+                    }
+                  },
+                )
+              : null,
           body: SafeArea(
             child: DecoratedBox(
               decoration: const BoxDecoration(
@@ -37,7 +158,10 @@ class MePage extends StatelessWidget {
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
                 children: [
-                  const _ProfileHeader(),
+                  _ProfileHeader(
+                    avatarPath: widget.store.userAvatarPath,
+                    onPickAvatar: _pickAvatar,
+                  ),
                   const SizedBox(height: 18),
                   Row(
                     children: [
@@ -186,10 +310,17 @@ class MePage extends StatelessWidget {
 }
 
 class _ProfileHeader extends StatelessWidget {
-  const _ProfileHeader();
+  const _ProfileHeader({
+    required this.avatarPath,
+    required this.onPickAvatar,
+  });
+
+  final String avatarPath;
+  final VoidCallback onPickAvatar;
 
   @override
   Widget build(BuildContext context) {
+    final hasAvatar = avatarPath.trim().isNotEmpty;
     return Column(
       children: [
         SizedBox(
@@ -206,30 +337,50 @@ class _ProfileHeader extends StatelessWidget {
                   color: Color(0xFFF0EFF0),
                   shape: BoxShape.circle,
                 ),
-                child: Container(
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFEDE8DD),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.local_florist_outlined,
-                    size: 40,
-                    color: DsColors.copper,
-                  ),
-                ),
+                child: hasAvatar
+                    ? ClipOval(
+                        child: avatarPath.startsWith('http://') ||
+                                avatarPath.startsWith('https://')
+                            ? Image.network(
+                                avatarPath,
+                                width: double.infinity,
+                                height: double.infinity,
+                                fit: BoxFit.cover,
+                              )
+                            : Image.file(
+                                File(avatarPath),
+                                width: double.infinity,
+                                height: double.infinity,
+                                fit: BoxFit.cover,
+                              ),
+                      )
+                    : Container(
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFEDE8DD),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.local_florist_outlined,
+                          size: 40,
+                          color: DsColors.copper,
+                        ),
+                      ),
               ),
               Positioned(
                 right: -2,
                 bottom: 6,
-                child: Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFF9300),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 3),
+                child: GestureDetector(
+                  onTap: onPickAvatar,
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFF9300),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 3),
+                    ),
+                    child: const Icon(Icons.edit, color: Colors.white, size: 16),
                   ),
-                  child: const Icon(Icons.edit, color: Colors.white, size: 16),
                 ),
               ),
             ],

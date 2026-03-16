@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 
 class DsColors {
-  static const Color paper = Color(0xFFFAF6EF);
-  static const Color paperDeep = Color(0xFFF2EBDD);
-  static const Color ink = Color(0xFF2D261E);
-  static const Color mutedInk = Color(0xFF6A6158);
-  static const Color line = Color(0xFFDDD1C1);
-  static const Color copper = Color(0xFFAD7E45);
-  static const Color shadow = Color(0x1A4A3520);
+  static const Color paper = Color(0xFFFFFFFF);
+  static const Color paperDeep = Color(0xFFF3F3F3);
+  static const Color ink = Color(0xFF111111);
+  static const Color mutedInk = Color(0xFF666666);
+  static const Color line = Color(0xFFD9D9D9);
+  static const Color red = Color(0xFFD32F2F);
+  static const Color redDeep = Color(0xFFB71C1C);
+  static const Color redSoft = Color(0xFFFFEBEE);
+  static const Color redSoftStrong = Color(0x33D32F2F);
+  static const Color copper = red;
+  static const Color shadow = Color(0x1A000000);
 }
 
 class DsRadius {
@@ -45,7 +49,7 @@ class Ds {
         surfaceTintColor: Colors.transparent,
       ),
       cardTheme: CardThemeData(
-        color: const Color(0xCCFFFFFF),
+        color: Colors.white,
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: DsRadius.lg,
@@ -54,7 +58,7 @@ class Ds {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: const Color(0xCCFFFFFF),
+        fillColor: Colors.white,
         border: OutlineInputBorder(
           borderRadius: DsRadius.md,
           borderSide: const BorderSide(color: DsColors.line),
@@ -70,10 +74,37 @@ class Ds {
       ),
       chipTheme: ChipThemeData(
         backgroundColor: DsColors.paperDeep,
-        selectedColor: const Color(0x35AD7E45),
+        selectedColor: DsColors.redSoftStrong,
         side: const BorderSide(color: DsColors.line),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         labelStyle: const TextStyle(color: DsColors.ink),
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: DsColors.paper,
+        indicatorColor: DsColors.redSoft,
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return const IconThemeData(color: DsColors.red);
+          }
+          return const IconThemeData(color: DsColors.mutedInk);
+        }),
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return const TextStyle(color: DsColors.red, fontWeight: FontWeight.w600);
+          }
+          return const TextStyle(color: DsColors.mutedInk);
+        }),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          backgroundColor: DsColors.red,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: DsRadius.md),
+        ),
+      ),
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: DsColors.red,
+        foregroundColor: Colors.white,
       ),
       textTheme: const TextTheme(
         titleLarge: TextStyle(

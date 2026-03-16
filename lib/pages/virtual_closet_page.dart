@@ -179,7 +179,7 @@ class _FilterSwitch extends StatelessWidget {
       height: 36,
       padding: const EdgeInsets.all(3),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8F4ED),
+        color: const Color(0xFFF5F5F5),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: DsColors.line),
       ),
@@ -265,9 +265,9 @@ class _TodayWearList extends StatelessWidget {
     final items = store.quickWearItemsForToday();
     final now = DateTime.now();
     final dateLabel = '${now.month}月${now.day}日';
-    const accentBackground = Color(0x1AF5903D);
-    const accentBorder = Color(0x33F5903D);
-    const chipBackground = Color(0x33F7B369);
+    const accentBackground = Color(0x1AD32F2F);
+    const accentBorder = Color(0x33D32F2F);
+    const chipBackground = Color(0x33D32F2F);
 
     return Container(
       decoration: BoxDecoration(
@@ -275,11 +275,11 @@ class _TodayWearList extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFFFFFAF1), Color(0xFFFFF1DC)],
+          colors: [Color(0xFFFFFFFF), Color(0xFFF5F5F5)],
         ),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x26F4A762),
+            color: Color(0x26D32F2F),
             blurRadius: 24,
             offset: Offset(0, 14),
           ),
@@ -312,7 +312,7 @@ class _TodayWearList extends StatelessWidget {
                 child: Text(
                   '${items.length} 件',
                   style: const TextStyle(
-                    color: Color(0xFFB6610D),
+                    color: Color(0xFFD32F2F),
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -321,7 +321,7 @@ class _TodayWearList extends StatelessWidget {
               Text(
                 dateLabel,
                 style: const TextStyle(
-                  color: Color(0xFF9A6D39),
+                  color: Color(0xFFD32F2F),
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -334,14 +334,14 @@ class _TodayWearList extends StatelessWidget {
               const Icon(
                 Icons.info_outline,
                 size: 18,
-                color: Color(0xFFF08232),
+                color: Color(0xFFE53935),
               ),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
                   '在单品详情点击“立刻穿上”添加，长按单品卡片可删除。',
                   style: const TextStyle(
-                    color: Color(0xFFB1773F),
+                    color: Color(0xFFD32F2F),
                     fontSize: 13,
                     height: 1.4,
                   ),
@@ -363,7 +363,7 @@ class _TodayWearList extends StatelessWidget {
               child: const Text(
                 '今日还没有选定单品，去逛逛衣橱挑一件吧～',
                 style: TextStyle(
-                  color: Color(0xFFB1773F),
+                  color: Color(0xFFD32F2F),
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -752,7 +752,7 @@ class _FloatIconState extends State<_FloatIcon> {
                 shape: BoxShape.circle,
                 color: Colors.white,
                 border: widget.highlighted
-                    ? Border.all(color: const Color(0xFFF2C7AE), width: 3)
+                    ? Border.all(color: const Color(0xFFF8C6C6), width: 3)
                     : null,
                 boxShadow: const [
                   BoxShadow(
@@ -838,7 +838,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFDF5EB),
+      backgroundColor: const Color(0xFFF5F5F5),
       body: SafeArea(
         child: ValueListenableBuilder<int>(
           valueListenable: widget.refresh,

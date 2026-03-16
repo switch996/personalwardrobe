@@ -95,7 +95,7 @@ class _AppBottomNavState extends State<AppBottomNav> {
             width: 56,
             height: 56,
             decoration: BoxDecoration(
-              color: selected ? DsColors.copper : const Color(0xFFEBDDCB),
+              color: selected ? DsColors.copper : DsColors.paperDeep,
               shape: BoxShape.circle,
               border: Border.all(color: Colors.white, width: 2),
               boxShadow: const [
@@ -109,7 +109,7 @@ class _AppBottomNavState extends State<AppBottomNav> {
             child: Icon(
               Icons.add_rounded,
               size: 34,
-              color: selected ? Colors.white : const Color(0xFF8D6437),
+              color: selected ? Colors.white : DsColors.red,
             ),
           ),
         ),

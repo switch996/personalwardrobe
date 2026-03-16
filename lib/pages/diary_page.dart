@@ -202,7 +202,7 @@ class _CalendarView extends StatelessWidget {
           child: Text(
             label,
             style: const TextStyle(
-              color: Color(0xFF9AA1AC),
+              color: Color(0xFF8E8E8E),
               fontWeight: FontWeight.w600,
               fontSize: 12,
             ),
@@ -233,7 +233,7 @@ class _CalendarView extends StatelessWidget {
                     width: 28,
                     height: 28,
                     decoration: const BoxDecoration(
-                      color: Color(0xFFF07212),
+                      color: Color(0xFFD32F2F),
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -252,8 +252,8 @@ class _CalendarView extends StatelessWidget {
                       height: 4,
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? const Color(0xFFFFD6AF)
-                            : const Color(0xFFF07212),
+                            ? const Color(0xFFFFEBEE)
+                            : const Color(0xFFD32F2F),
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -289,7 +289,7 @@ class _CalendarView extends StatelessWidget {
                 iconSize: 18,
                 icon: const Icon(
                   Icons.arrow_back_ios_new_rounded,
-                  color: Color(0xFFF07212),
+                  color: Color(0xFFD32F2F),
                 ),
               ),
               Expanded(
@@ -327,7 +327,7 @@ class _CalendarView extends StatelessWidget {
                                               setSheetState(() => year -= 1),
                                           icon: const Icon(
                                             Icons.chevron_left,
-                                            color: Color(0xFFF07212),
+                                            color: Color(0xFFD32F2F),
                                           ),
                                         ),
                                         Expanded(
@@ -337,7 +337,7 @@ class _CalendarView extends StatelessWidget {
                                               style: const TextStyle(
                                                 fontSize: 18,
                                                 fontWeight: FontWeight.w800,
-                                                color: Color(0xFFF07212),
+                                                color: Color(0xFFD32F2F),
                                               ),
                                             ),
                                           ),
@@ -347,7 +347,7 @@ class _CalendarView extends StatelessWidget {
                                               setSheetState(() => year += 1),
                                           icon: const Icon(
                                             Icons.chevron_right,
-                                            color: Color(0xFFF07212),
+                                            color: Color(0xFFD32F2F),
                                           ),
                                         ),
                                       ],
@@ -379,8 +379,8 @@ class _CalendarView extends StatelessWidget {
                                             alignment: Alignment.center,
                                             decoration: BoxDecoration(
                                               color: selected
-                                                  ? const Color(0xFFF07212)
-                                                  : const Color(0xFFF7F1E8),
+                                                  ? const Color(0xFFD32F2F)
+                                                  : const Color(0xFFF5F5F5),
                                               borderRadius:
                                                   BorderRadius.circular(14),
                                             ),
@@ -417,7 +417,7 @@ class _CalendarView extends StatelessWidget {
                         style: const TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.w800,
-                          color: Color(0xFFF07212),
+                          color: Color(0xFFD32F2F),
                         ),
                       ),
                     ),
@@ -431,7 +431,7 @@ class _CalendarView extends StatelessWidget {
                 iconSize: 18,
                 icon: const Icon(
                   Icons.arrow_forward_ios_rounded,
-                  color: Color(0xFFF07212),
+                  color: Color(0xFFD32F2F),
                 ),
               ),
             ],
@@ -463,7 +463,7 @@ class _SectionTitle extends StatelessWidget {
           width: 4,
           height: 18,
           decoration: BoxDecoration(
-            color: const Color(0xFFF07212),
+            color: const Color(0xFFD32F2F),
             borderRadius: BorderRadius.circular(4),
           ),
         ),
@@ -507,7 +507,7 @@ class _DailyOutfitCard extends StatelessWidget {
           Expanded(
             child: Container(
               decoration: const BoxDecoration(
-                color: Color(0xFFF8F4EE),
+                color: Color(0xFFF5F5F5),
                 borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
               ),
               child: AppImage(
@@ -546,7 +546,7 @@ class _DailyOutfitCard extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFFF07212),
+                          color: Color(0xFFD32F2F),
                         ),
                       ),
                     ],
@@ -555,7 +555,7 @@ class _DailyOutfitCard extends StatelessWidget {
                 FilledButton.icon(
                   onPressed: onTapDetail,
                   style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFFF07B1B),
+                    backgroundColor: const Color(0xFFD32F2F),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 14,

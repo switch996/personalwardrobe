@@ -51,7 +51,7 @@ class DiaryOutfitDetailPage extends StatelessWidget {
                       const Text(
                         '搭配单品',
                         style: TextStyle(
-                          color: Color(0xFFF07B1B),
+                          color: Color(0xFFD32F2F),
                           fontSize: 18,
                           fontWeight: FontWeight.w800,
                         ),
@@ -62,7 +62,7 @@ class DiaryOutfitDetailPage extends StatelessWidget {
                           height: 120,
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF6EFE5),
+                            color: const Color(0xFFF5F5F5),
                             borderRadius: BorderRadius.circular(18),
                             border: Border.all(color: DsColors.line),
                           ),
@@ -139,7 +139,7 @@ class _TopBar extends StatelessWidget {
       height: 64,
       padding: const EdgeInsets.symmetric(horizontal: 6),
       decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xFFE8DAC8))),
+        border: Border(bottom: BorderSide(color: Color(0xFFDADADA))),
       ),
       child: Row(
         children: [
@@ -148,7 +148,7 @@ class _TopBar extends StatelessWidget {
             icon: const Icon(
               Icons.arrow_back_ios_new_rounded,
               size: 22,
-              color: Color(0xFF9A6340),
+              color: Color(0xFFD32F2F),
             ),
           ),
           Expanded(
@@ -156,7 +156,7 @@ class _TopBar extends StatelessWidget {
               child: Text(
                 _dateLabel(date),
                 style: const TextStyle(
-                  color: Color(0xFF141A2D),
+                  color: Color(0xFF151515),
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
                 ),
@@ -172,7 +172,7 @@ class _TopBar extends StatelessWidget {
             icon: const Icon(
               Icons.share_outlined,
               size: 24,
-              color: Color(0xFF9A6340),
+              color: Color(0xFFD32F2F),
             ),
           ),
         ],
@@ -194,7 +194,7 @@ class _OutfitImageCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFF3E8DE),
+        color: const Color(0xFFF5F5F5),
         borderRadius: BorderRadius.circular(24),
         boxShadow: const [
           BoxShadow(
@@ -255,7 +255,7 @@ class _ClosetItemTile extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
             style: const TextStyle(
-              color: Color(0xFF11172A),
+              color: Color(0xFF151515),
               fontSize: 16,
               fontWeight: FontWeight.w700,
             ),

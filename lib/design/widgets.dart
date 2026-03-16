@@ -29,7 +29,7 @@ class AppScaffold extends StatelessWidget {
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [DsColors.paper, Color(0xFFFCF9F2)],
+              colors: [DsColors.paper, DsColors.paperDeep],
             ),
           ),
           child: body,
@@ -50,7 +50,7 @@ class PaperCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         borderRadius: DsRadius.lg,
-        color: const Color(0xCCFFFFFF),
+        color: Colors.white,
         border: Border.all(color: DsColors.line),
         boxShadow: const [
           BoxShadow(color: DsColors.shadow, blurRadius: 18, offset: Offset(0, 7)),

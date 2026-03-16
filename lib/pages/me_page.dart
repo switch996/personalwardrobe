@@ -152,7 +152,7 @@ class _MePageState extends State<MePage> {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [DsColors.paper, Color(0xFFFCF9F2)],
+                  colors: [DsColors.paper, Color(0xFFF5F5F5)],
                 ),
               ),
               child: ListView(
@@ -186,31 +186,31 @@ class _MePageState extends State<MePage> {
                       style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF90A0B6),
+                        color: Color(0xFF8E8E8E),
                       ),
                     ),
                   ),
                   const SizedBox(height: 10),
                   _SettingTile(
                     icon: Icons.cloud_upload_outlined,
-                    iconBg: const Color(0xFFE8F0FF),
-                    iconColor: const Color(0xFF3E7CE8),
+                    iconBg: const Color(0xFFFFEBEE),
+                    iconColor: const Color(0xFFD32F2F),
                     title: '数据备份与导出',
                     onTap: () => showSnack(context, '数据备份与导出功能即将上线'),
                   ),
                   const SizedBox(height: 10),
                   _SettingTile(
                     icon: Icons.notifications_none_rounded,
-                    iconBg: const Color(0xFFF7EFE3),
-                    iconColor: const Color(0xFFFF8A00),
+                    iconBg: const Color(0xFFFFEBEE),
+                    iconColor: const Color(0xFFD32F2F),
                     title: '通知设置',
                     onTap: () => showSnack(context, '通知设置功能即将上线'),
                   ),
                   const SizedBox(height: 10),
                   _SettingTile(
                     icon: Icons.storage_rounded,
-                    iconBg: const Color(0xFFF2EBFF),
-                    iconColor: const Color(0xFF9A56F0),
+                    iconBg: const Color(0xFFFFEBEE),
+                    iconColor: const Color(0xFFD32F2F),
                     title: '存储空间管理',
                     trailing: usedStorageLabel,
                     onTap: () => showSnack(context, '存储管理功能即将上线'),
@@ -218,8 +218,8 @@ class _MePageState extends State<MePage> {
                   const SizedBox(height: 10),
                   _SettingTile(
                     icon: Icons.info_outline_rounded,
-                    iconBg: const Color(0xFFE7F6ED),
-                    iconColor: const Color(0xFF2BBF5F),
+                    iconBg: const Color(0xFFFFEBEE),
+                    iconColor: const Color(0xFFD32F2F),
                     title: '关于应用',
                     trailing: 'v2.4.0',
                     onTap: () => showSnack(context, '衣橱日记 本地版'),
@@ -227,10 +227,10 @@ class _MePageState extends State<MePage> {
                   const SizedBox(height: 10),
                   _SettingTile(
                     icon: Icons.logout_rounded,
-                    iconBg: const Color(0xFFFFECEC),
-                    iconColor: const Color(0xFFE25A5A),
+                    iconBg: const Color(0xFFFFEBEE),
+                    iconColor: const Color(0xFFD32F2F),
                     title: '退出登录',
-                    titleColor: const Color(0xFFE25A5A),
+                    titleColor: const Color(0xFFD32F2F),
                     onTap: () async {
                       final ok = await confirmDialog(
                         context,
@@ -248,7 +248,7 @@ class _MePageState extends State<MePage> {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 12,
-                      color: Color(0xFF9AADC5),
+                      color: Color(0xFF9A9A9A),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -334,7 +334,7 @@ class _ProfileHeader extends StatelessWidget {
                 height: 112,
                 padding: const EdgeInsets.all(6),
                 decoration: const BoxDecoration(
-                  color: Color(0xFFF0EFF0),
+                  color: Color(0xFFF5F5F5),
                   shape: BoxShape.circle,
                 ),
                 child: hasAvatar
@@ -356,7 +356,7 @@ class _ProfileHeader extends StatelessWidget {
                       )
                     : Container(
                         decoration: const BoxDecoration(
-                          color: Color(0xFFEDE8DD),
+                          color: Color(0xFFF5F5F5),
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(
@@ -375,7 +375,7 @@ class _ProfileHeader extends StatelessWidget {
                     width: 36,
                     height: 36,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFF9300),
+                      color: const Color(0xFFD32F2F),
                       shape: BoxShape.circle,
                       border: Border.all(color: Colors.white, width: 3),
                     ),
@@ -392,7 +392,7 @@ class _ProfileHeader extends StatelessWidget {
           style: TextStyle(
             fontSize: 30,
             fontWeight: FontWeight.w800,
-            color: Color(0xFF0E1731),
+            color: Color(0xFF121212),
           ),
         ),
         const SizedBox(height: 2),
@@ -400,7 +400,7 @@ class _ProfileHeader extends StatelessWidget {
           '本地智能衣橱管家',
           style: TextStyle(
             fontSize: 15,
-            color: Color(0xFF7E92AA),
+            color: Color(0xFF7E7E7E),
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -439,7 +439,7 @@ class _StatCard extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               fontSize: 18,
-              color: Color(0xFFFF8A00),
+              color: Color(0xFFD32F2F),
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -448,7 +448,7 @@ class _StatCard extends StatelessWidget {
             label,
             style: const TextStyle(
               fontSize: 12,
-              color: Color(0xFF7A8BA4),
+              color: Color(0xFF7A7A7A),
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -466,7 +466,7 @@ class _SettingTile extends StatelessWidget {
     required this.title,
     required this.onTap,
     this.trailing,
-    this.titleColor = const Color(0xFF101731),
+    this.titleColor = const Color(0xFF121212),
   });
 
   final IconData icon;
@@ -515,7 +515,7 @@ class _SettingTile extends StatelessWidget {
                   trailing!,
                   style: const TextStyle(
                     fontSize: 14,
-                    color: Color(0xFF8EA0B6),
+                    color: Color(0xFF8E8E8E),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -524,7 +524,7 @@ class _SettingTile extends StatelessWidget {
               const Icon(
                 Icons.chevron_right_rounded,
                 size: 26,
-                color: Color(0xFFD2DBE8),
+                color: Color(0xFFD0D0D0),
               ),
             ],
           ),

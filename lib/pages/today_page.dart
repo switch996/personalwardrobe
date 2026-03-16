@@ -149,14 +149,14 @@ class _HeaderRow extends StatelessWidget {
                 children: [
                   Icon(
                     Icons.wb_sunny_rounded,
-                    color: Color(0xFFF45E06),
+                    color: Color(0xFFD32F2F),
                     size: 24,
                   ),
                   SizedBox(width: 4),
                   Text(
                     '晴 24℃',
                     style: TextStyle(
-                      color: Color(0xFFF45E06),
+                      color: Color(0xFFD32F2F),
                       fontSize: 18,
                       fontWeight: FontWeight.w500,
                     ),
@@ -170,9 +170,9 @@ class _HeaderRow extends StatelessWidget {
           width: 56,
           height: 56,
           decoration: BoxDecoration(
-            color: const Color(0xFFF1F3F4),
+            color: const Color(0xFFF5F5F5),
             shape: BoxShape.circle,
-            border: Border.all(color: const Color(0xFFE0E6EA)),
+            border: Border.all(color: const Color(0xFFDDDDDD)),
             boxShadow: const [
               BoxShadow(
                 color: Color(0x14000000),
@@ -187,7 +187,7 @@ class _HeaderRow extends StatelessWidget {
                 context,
               ).showSnackBar(const SnackBar(content: Text('通知中心即将开放')));
             },
-            icon: const Icon(Icons.notifications, color: Color(0xFF334A66)),
+            icon: const Icon(Icons.notifications, color: Color(0xFF4D4D4D)),
           ),
         ),
       ],
@@ -220,7 +220,7 @@ class _HeroCard extends StatelessWidget {
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [Color(0xFF2B2D3B), Color(0xFF1F2030)],
+                    colors: [Color(0xFF171717), Color(0xFF0F0F0F)],
                   ),
                 ),
                 child: AppImage(
@@ -245,7 +245,7 @@ class _HeroCard extends StatelessWidget {
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: Color(0x30F9650A),
+                      color: Color(0x30D32F2F),
                       blurRadius: 18,
                       offset: Offset(0, 9),
                     ),
@@ -282,7 +282,7 @@ class _ClosetBanner extends StatelessWidget {
           gradient: const LinearGradient(
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
-            colors: [Color(0xFF1D2744), Color(0xFF6A4A30)],
+            colors: [Color(0xFF111111), Color(0xFF2A2A2A)],
           ),
           boxShadow: const [
             BoxShadow(
@@ -305,7 +305,7 @@ class _ClosetBanner extends StatelessWidget {
               ),
               child: const Icon(
                 Icons.door_sliding_outlined,
-                color: Color(0xFFE5E9F0),
+                color: Color(0xFFE5E5E5),
                 size: 52,
               ),
             ),
@@ -327,7 +327,7 @@ class _ClosetBanner extends StatelessWidget {
                   Text(
                     '管理你的个人时尚收藏',
                     style: TextStyle(
-                      color: Color(0xFFD0D7E3),
+                      color: Color(0xFFCACACA),
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                     ),
@@ -336,7 +336,7 @@ class _ClosetBanner extends StatelessWidget {
                   Text(
                     '点击推门开启 →',
                     style: TextStyle(
-                      color: Color(0xFFF5903D),
+                      color: Color(0xFFE53935),
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                     ),
@@ -400,7 +400,7 @@ class _WeekSection extends StatelessWidget {
               child: const Text(
                 '查看全部',
                 style: TextStyle(
-                  color: Color(0xFFF45E06),
+                  color: Color(0xFFD32F2F),
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                 ),
@@ -471,14 +471,14 @@ class _WeekDayCard extends StatelessWidget {
         height: 72,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(14),
-          color: selected ? const Color(0xFFF8660A) : const Color(0xFFF1F3F5),
+          color: selected ? const Color(0xFFD32F2F) : const Color(0xFFF5F5F5),
           border: outlined
-              ? Border.all(color: const Color(0xFFF8660A), width: 1.3)
+              ? Border.all(color: const Color(0xFFD32F2F), width: 1.3)
               : null,
           boxShadow: selected
               ? const [
                   BoxShadow(
-                    color: Color(0x28F8660A),
+                    color: Color(0x28D32F2F),
                     blurRadius: 14,
                     offset: Offset(0, 8),
                   ),
@@ -491,7 +491,7 @@ class _WeekDayCard extends StatelessWidget {
             Text(
               label,
               style: TextStyle(
-                color: selected ? Colors.white : const Color(0xFF97A6BA),
+                color: selected ? Colors.white : const Color(0xFF8E8E8E),
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
               ),
@@ -513,8 +513,8 @@ class _WeekDayCard extends StatelessWidget {
                 color: selected
                     ? const Color(0x33FFFFFF)
                     : (hasRecord
-                          ? const Color(0x1AF8660A)
-                          : const Color(0xFFE4E8EE)),
+                          ? const Color(0x1AD32F2F)
+                          : const Color(0xFFE6E6E6)),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -523,8 +523,8 @@ class _WeekDayCard extends StatelessWidget {
                 color: selected
                     ? Colors.white
                     : (hasRecord
-                          ? const Color(0xFFF8660A)
-                          : const Color(0xFFAAB4C4)),
+                          ? const Color(0xFFD32F2F)
+                          : const Color(0xFF9E9E9E)),
               ),
             ),
           ],

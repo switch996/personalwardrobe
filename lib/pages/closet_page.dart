@@ -123,7 +123,7 @@ class _ClosetPageState extends State<ClosetPage> {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [DsColors.paper, Color(0xFFFCF9F2)],
+                  colors: [DsColors.paper, Color(0xFFF5F5F5)],
                 ),
               ),
               child: Padding(
@@ -293,7 +293,7 @@ class _OverviewCard extends StatelessWidget {
             Container(
               height: 160,
               decoration: BoxDecoration(
-                color: const Color(0xFFF6F1E9),
+                color: const Color(0xFFF5F5F5),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: DsColors.line),
               ),
@@ -340,14 +340,14 @@ class _OverviewCard extends StatelessWidget {
     _OverviewMetric metric,
   ) {
     const palette = <Color>[
-      Color(0xFF5B6EF5),
-      Color(0xFF3F8CFF),
-      Color(0xFF4AC2E0),
-      Color(0xFF41B35D),
-      Color(0xFFC2D93C),
-      Color(0xFFF5A623),
-      Color(0xFFFF7B54),
-      Color(0xFFB37FEB),
+      Color(0xFFD32F2F),
+      Color(0xFFE53935),
+      Color(0xFFEF5350),
+      Color(0xFFC62828),
+      Color(0xFF9E9E9E),
+      Color(0xFF757575),
+      Color(0xFFEF5350),
+      Color(0xFFB71C1C),
     ];
     final nonEmptyGroups = groups.where((g) => g.items.isNotEmpty).toList();
     return List.generate(nonEmptyGroups.length, (index) {
@@ -379,7 +379,7 @@ class _ClosetHeaderSwitch extends StatelessWidget {
       height: 36,
       padding: const EdgeInsets.all(3),
       decoration: BoxDecoration(
-        color: const Color(0xFFF7F0E4),
+        color: const Color(0xFFF5F5F5),
         borderRadius: BorderRadius.circular(999),
         border: Border.all(color: DsColors.line),
       ),
@@ -529,7 +529,7 @@ class _DonutPainter extends CustomPainter {
     const gap = 0.03;
 
     final background = Paint()
-      ..color = const Color(0xFFEDE7DC)
+      ..color = const Color(0xFFE5E5E5)
       ..style = PaintingStyle.stroke
       ..strokeWidth = stroke;
     canvas.drawCircle(center, radius, background);
@@ -571,7 +571,7 @@ class _LegendChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: const Color(0xFFF6F1E9),
+        color: const Color(0xFFF5F5F5),
         borderRadius: BorderRadius.circular(999),
         border: Border.all(color: DsColors.line),
       ),
@@ -626,7 +626,7 @@ class _CategoryRowCard extends StatelessWidget {
                 ),
               ),
               Material(
-                color: const Color(0xFFF7F0E4),
+                color: const Color(0xFFF5F5F5),
                 borderRadius: BorderRadius.circular(10),
                 child: InkWell(
                   onTap: onOpenList,
@@ -650,7 +650,7 @@ class _CategoryRowCard extends StatelessWidget {
               height: 74,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: const Color(0xFFF8F4ED),
+                color: const Color(0xFFF5F5F5),
                 borderRadius: BorderRadius.circular(14),
               ),
               child: const Text(

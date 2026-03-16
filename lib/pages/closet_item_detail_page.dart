@@ -140,6 +140,11 @@ class ClosetItemDetailPage extends StatelessWidget {
             _InfoCard(
               children: [
                 _InfoRow(icon: Icons.price_check_outlined, label: '价格', value: item.price <= 0 ? '未填写' : '¥${item.price.toStringAsFixed(0)}', highlight: item.price > 0),
+                _InfoRow(
+                  icon: Icons.event_available_outlined,
+                  label: '购买时间',
+                  value: _formatDate(item.createdAt),
+                ),
                 _InfoRow(icon: Icons.category_outlined, label: '分类', value: LocalStore.categoryLabel(item.category)),
                 if (item.subCategory.isNotEmpty)
                   _InfoRow(
@@ -174,6 +179,13 @@ class ClosetItemDetailPage extends StatelessWidget {
     if (item.brand.isNotEmpty) tags.add(item.brand);
     tags.add(LocalStore.categoryLabel(item.category));
     return tags.join(' · ');
+  }
+
+  String _formatDate(DateTime date) {
+    final y = date.year.toString().padLeft(4, '0');
+    final m = date.month.toString().padLeft(2, '0');
+    final d = date.day.toString().padLeft(2, '0');
+    return '$y-$m-$d';
   }
 }
 

@@ -7,6 +7,10 @@ import 'backend_api.dart';
 
 class LocalStore {
   LocalStore({BackendApi? api}) : _api = api ?? BackendApi();
+  static const String _defaultGender = String.fromEnvironment(
+    'PW_GENDER',
+    defaultValue: 'female',
+  );
 
   static const List<String> outfitTagPresets = <String>[
     '通勤',
@@ -57,6 +61,7 @@ class LocalStore {
   final List<ClosetItem> closet = <ClosetItem>[];
   final List<String> todaysQuickWearItemIds = <String>[];
   String userAvatarPath = '';
+  String userGender = _normalizeGender(_defaultGender);
 
   DateTime? _quickWearDate;
 
@@ -447,6 +452,12 @@ class LocalStore {
   List<dynamic> _asList(Object? value) {
     if (value is List<dynamic>) return value;
     return const <dynamic>[];
+  }
+
+  static String _normalizeGender(String value) {
+    final lower = value.trim().toLowerCase();
+    if (lower == 'male' || lower == 'female') return lower;
+    return 'female';
   }
 }
 

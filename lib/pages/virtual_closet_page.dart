@@ -982,15 +982,6 @@ class _CategoryListPageState extends State<CategoryListPage> {
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                '添加于 ${_formatDate(item.createdAt)}',
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: DsColors.mutedInk,
-                                ),
-                              ),
                             ],
                           ),
                         ),
@@ -1024,11 +1015,6 @@ class _CategoryListPageState extends State<CategoryListPage> {
     return filtered;
   }
 
-  String _formatDate(DateTime date) {
-    final m = date.month.toString().padLeft(2, '0');
-    final d = date.day.toString().padLeft(2, '0');
-    return '${date.year}.$m.$d';
-  }
 }
 
 class _SearchField extends StatelessWidget {

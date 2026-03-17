@@ -5,9 +5,6 @@ import '../design/ds.dart';
 import '../design/widgets.dart';
 import '../models/closet_item.dart';
 import '../pages/closet_item_detail_page.dart';
-import '../pages/closet_page.dart';
-import '../pages/diary_page.dart';
-import '../pages/me_page.dart';
 import '../sheets/closet_item_editor_sheet.dart';
 import '../store/local_store.dart';
 
@@ -17,11 +14,13 @@ class VirtualClosetPage extends StatefulWidget {
     required this.store,
     required this.refresh,
     required this.onRefresh,
+    this.onNavigateTab,
   });
 
   final LocalStore store;
   final ValueNotifier<int> refresh;
   final VoidCallback onRefresh;
+  final ValueChanged<int>? onNavigateTab;
 
   @override
   State<VirtualClosetPage> createState() => _VirtualClosetPageState();
@@ -29,7 +28,6 @@ class VirtualClosetPage extends StatefulWidget {
 
 class _VirtualClosetPageState extends State<VirtualClosetPage> {
   bool _byType = true;
-  int _bottomNavIndex = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -64,72 +62,47 @@ class _VirtualClosetPageState extends State<VirtualClosetPage> {
               ],
             ),
           ),
-          bottomNavigationBar: AppBottomNav(
-            selectedIndex: _bottomNavIndex,
-            firstTab: AppBottomNavFirstTab.home,
-            onDestinationSelected: (value) async {
-              switch (value) {
-                case 0:
-                  setState(() {
-                    _bottomNavIndex = value;
-                  });
-                  Navigator.of(context).pop();
-                  break;
-                case 1:
-                  setState(() {
-                    _bottomNavIndex = value;
-                  });
-                  await Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => DiaryPage(
-                        store: widget.store,
-                        refresh: widget.refresh,
-                        onRefresh: widget.onRefresh,
-                        showBottomNav: true,
-                      ),
-                    ),
-                  );
-                  break;
-                case 2:
-                  final changed = await showClosetItemEditorSheet(
-                    context,
-                    store: widget.store,
-                  );
-                  if (changed == true) widget.onRefresh();
-                  break;
-                case 3:
-                  setState(() {
-                    _bottomNavIndex = value;
-                  });
-                  await Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => ClosetPage(
-                        store: widget.store,
-                        refresh: widget.refresh,
-                        onRefresh: widget.onRefresh,
-                        showBottomNav: true,
-                      ),
-                    ),
-                  );
-                  break;
-                case 4:
-                  setState(() {
-                    _bottomNavIndex = value;
-                  });
-                  await Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => MePage(
-                        store: widget.store,
-                        refresh: widget.refresh,
-                        onRefresh: widget.onRefresh,
-                        showBottomNav: true,
-                      ),
-                    ),
-                  );
-                  break;
-              }
-            },
-          ),
+          bottomNavigationBar: widget.onNavigateTab == null
+              ? AppBottomNav(
+                  selectedIndex: 0,
+                  firstTab: AppBottomNavFirstTab.home,
+                  onDestinationSelected: (value) async {
+                    switch (value) {
+                      case 0:
+                        widget.onNavigateTab?.call(value);
+                        break;
+                      case 1:
+                        if (widget.onNavigateTab != null) {
+                          widget.onNavigateTab!(value);
+                        } else {
+                          Navigator.of(context).pop(value);
+                        }
+                        break;
+                      case 2:
+                        final changed = await showClosetItemEditorSheet(
+                          context,
+                          store: widget.store,
+                        );
+                        if (changed == true) widget.onRefresh();
+                        break;
+                      case 3:
+                        if (widget.onNavigateTab != null) {
+                          widget.onNavigateTab!(value);
+                        } else {
+                          Navigator.of(context).pop(value);
+                        }
+                        break;
+                      case 4:
+                        if (widget.onNavigateTab != null) {
+                          widget.onNavigateTab!(value);
+                        } else {
+                          Navigator.of(context).pop(value);
+                        }
+                        break;
+                    }
+                  },
+                )
+              : null,
         );
       },
     );
@@ -540,8 +513,9 @@ class _RemoveBadge extends StatelessWidget {
   }
 }
 
-class _FloatBoard extends StatelessWidget {
-  const _FloatBoard({
+// ignore: unused_element
+class _LegacyFloatBoard extends StatelessWidget {
+  const _LegacyFloatBoard({
     required this.store,
     required this.byType,
     required this.refresh,
@@ -711,6 +685,196 @@ class _FloatBoard extends StatelessWidget {
   }
 }
 
+class _FloatBoard extends StatelessWidget {
+  const _FloatBoard({
+    required this.store,
+    required this.byType,
+    required this.refresh,
+    required this.onRefresh,
+  });
+
+  final LocalStore store;
+  final bool byType;
+  final ValueNotifier<int> refresh;
+  final VoidCallback onRefresh;
+
+  static const List<_VirtualIconType> _types = <_VirtualIconType>[
+    _VirtualIconType(
+      key: 'top',
+      label: '\u4e0a\u88c5',
+      icon: Icons.checkroom_outlined,
+      sourceCategory: 'top',
+    ),
+    _VirtualIconType(
+      key: 'bottom',
+      label: '\u4e0b\u88c5',
+      icon: Icons.straighten_outlined,
+      sourceCategory: 'bottom',
+    ),
+    _VirtualIconType(
+      key: 'outerwear',
+      label: '\u5916\u5957',
+      icon: Icons.dry_cleaning_outlined,
+      sourceCategory: 'outerwear',
+    ),
+    _VirtualIconType(
+      key: 'shoes',
+      label: '\u978b\u5b50',
+      icon: Icons.hiking_outlined,
+      sourceCategory: 'shoes',
+    ),
+    _VirtualIconType(
+      key: 'bag',
+      label: '\u5305\u888b',
+      icon: Icons.shopping_bag_outlined,
+      sourceCategory: 'bag',
+    ),
+    _VirtualIconType(
+      key: 'accessory',
+      label: '\u914d\u9970',
+      icon: Icons.emoji_people_outlined,
+      sourceCategory: 'accessory',
+      subOptions: <String>['\u5e3d\u5b50', '\u56f4\u5dfe', '\u8170\u5e26'],
+    ),
+    _VirtualIconType(
+      key: 'jewelry',
+      label: '\u9996\u9970',
+      icon: Icons.diamond_outlined,
+      sourceCategory: 'accessory',
+      subOptions: <String>['\u9879\u94fe', '\u6212\u6307', '\u8033\u9970'],
+    ),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final iconWidgets = _types.map((type) {
+      final item = _firstByType(type.key);
+      return _FloatIcon(
+        label: _labelFor(item, type.label),
+        icon: type.icon,
+        highlighted: false,
+        onTap: () => _openList(context, type: type, item: item),
+      );
+    }).toList();
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Wrap(
+        alignment: WrapAlignment.spaceEvenly,
+        runSpacing: 28,
+        spacing: 12,
+        children: iconWidgets,
+      ),
+    );
+  }
+
+  ClosetItem? _firstByType(String typeKey) {
+    for (final item in store.closet) {
+      if (_matchesType(item, typeKey)) return item;
+    }
+    return null;
+  }
+
+  bool _matchesType(ClosetItem item, String typeKey) {
+    switch (typeKey) {
+      case 'top':
+      case 'bottom':
+      case 'outerwear':
+      case 'shoes':
+      case 'bag':
+        return item.category == typeKey;
+      case 'accessory':
+        return _isAccessory(item);
+      case 'jewelry':
+        return _isJewelry(item);
+      default:
+        return false;
+    }
+  }
+
+  bool _isAccessory(ClosetItem item) {
+    if (item.category != 'accessory') return false;
+    return !_isJewelry(item);
+  }
+
+  bool _isJewelry(ClosetItem item) {
+    if (item.category != 'accessory') return false;
+    final text = '${item.subCategory} ${item.name}'.toLowerCase();
+    const keywords = <String>[
+      '\u9879\u94fe',
+      '\u6212\u6307',
+      '\u8033\u9970',
+      '\u8033\u73af',
+      '\u9996\u9970',
+      '\u73e0\u5b9d',
+      '\u624b\u94fe',
+      '\u624b\u9556',
+      '\u80f8\u9488',
+    ];
+    return keywords.any(text.contains);
+  }
+
+  String _labelFor(ClosetItem? item, String typeLabel) {
+    if (byType) return typeLabel;
+    final brand = item?.brand.trim() ?? '';
+    return brand.isEmpty ? '\u672a\u8bbe\u7f6e\u54c1\u724c' : brand;
+  }
+
+  void _openList(
+    BuildContext context, {
+    required _VirtualIconType type,
+    ClosetItem? item,
+  }) {
+    if (byType) {
+      final title = '${type.label}\u5217\u8868';
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => CategoryListPage(
+            store: store,
+            refresh: refresh,
+            onRefresh: onRefresh,
+            title: title,
+            category: type.sourceCategory,
+            itemMatcher: (item) => _matchesType(item, type.key),
+            subOptions: type.subOptions,
+          ),
+        ),
+      );
+      return;
+    }
+
+    final brandValue = item?.brand.trim() ?? '';
+    final display = brandValue.isEmpty ? '\u672a\u8bbe\u7f6e\u54c1\u724c' : brandValue;
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => CategoryListPage(
+          store: store,
+          refresh: refresh,
+          onRefresh: onRefresh,
+          title: '$display \u5217\u8868',
+          brand: brandValue,
+        ),
+      ),
+    );
+  }
+}
+
+class _VirtualIconType {
+  const _VirtualIconType({
+    required this.key,
+    required this.label,
+    required this.icon,
+    required this.sourceCategory,
+    this.subOptions,
+  });
+
+  final String key;
+  final String label;
+  final IconData icon;
+  final String sourceCategory;
+  final List<String>? subOptions;
+}
+
 class _FloatIcon extends StatefulWidget {
   const _FloatIcon({
     required this.label,
@@ -806,6 +970,8 @@ class CategoryListPage extends StatefulWidget {
     required this.title,
     this.category,
     this.brand,
+    this.itemMatcher,
+    this.subOptions,
   });
 
   final LocalStore store;
@@ -814,6 +980,8 @@ class CategoryListPage extends StatefulWidget {
   final String title;
   final String? category;
   final String? brand;
+  final bool Function(ClosetItem item)? itemMatcher;
+  final List<String>? subOptions;
 
   @override
   State<CategoryListPage> createState() => _CategoryListPageState();
@@ -844,9 +1012,10 @@ class _CategoryListPageState extends State<CategoryListPage> {
           valueListenable: widget.refresh,
           builder: (context, value, _) {
             final items = _filteredItems();
-            final subOptions = widget.category == null
-                ? const <String>[]
-                : LocalStore.subCategoryOptions(widget.category!);
+            final subOptions = widget.subOptions ??
+                (widget.category == null
+                    ? const <String>[]
+                    : LocalStore.subCategoryOptions(widget.category!));
             if (!subOptions.contains(_subFilter) && _subFilter != '全部') {
               _subFilter = '全部';
             }
@@ -999,6 +1168,9 @@ class _CategoryListPageState extends State<CategoryListPage> {
   List<ClosetItem> _filteredItems() {
     final query = _search.text.trim().toLowerCase();
     final filtered = widget.store.closet.where((item) {
+      if (widget.itemMatcher != null && !widget.itemMatcher!(item)) {
+        return false;
+      }
       if (widget.category != null && item.category != widget.category) {
         return false;
       }

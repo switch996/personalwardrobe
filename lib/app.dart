@@ -78,16 +78,33 @@ class _RootTabs extends StatefulWidget {
 }
 
 class _RootTabsState extends State<_RootTabs> {
+  final GlobalKey<NavigatorState> _homeNavigatorKey =
+      GlobalKey<NavigatorState>();
   int _pageIndex = 0;
   int _navIndex = 0;
+
+  void _switchToTab(int value) {
+    setState(() {
+      _navIndex = value;
+      _pageIndex = value > 2 ? value - 1 : value;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final pages = <Widget>[
-      TodayPage(
-        store: widget.store,
-        refresh: widget.refresh,
-        onRefresh: widget.onRefresh,
+      Navigator(
+        key: _homeNavigatorKey,
+        onGenerateRoute: (_) {
+          return MaterialPageRoute<void>(
+            builder: (_) => TodayPage(
+              store: widget.store,
+              refresh: widget.refresh,
+              onRefresh: widget.onRefresh,
+              onNavigateTab: _switchToTab,
+            ),
+          );
+        },
       ),
       DiaryPage(
         store: widget.store,
@@ -107,7 +124,7 @@ class _RootTabsState extends State<_RootTabs> {
       body: IndexedStack(index: _pageIndex, children: pages),
       bottomNavigationBar: AppBottomNav(
         selectedIndex: _navIndex,
-        firstTab: AppBottomNavFirstTab.today,
+        firstTab: AppBottomNavFirstTab.home,
         onDestinationSelected: (value) async {
           if (value == 2) {
             final changed = await showClosetItemEditorSheet(
@@ -117,10 +134,7 @@ class _RootTabsState extends State<_RootTabs> {
             if (changed == true) widget.onRefresh();
             return;
           }
-          setState(() {
-            _navIndex = value;
-            _pageIndex = value > 2 ? value - 1 : value;
-          });
+          _switchToTab(value);
         },
       ),
     );

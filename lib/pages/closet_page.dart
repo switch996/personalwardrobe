@@ -65,10 +65,7 @@ class _ClosetPageState extends State<ClosetPage> {
                   onDestinationSelected: (value) async {
                     switch (value) {
                       case 0:
-                        setState(() {
-                          _bottomNavIndex = value;
-                        });
-                        Navigator.of(context).pop();
+                        Navigator.of(context).popUntil((route) => route.isFirst);
                         break;
                       case 1:
                         setState(() {

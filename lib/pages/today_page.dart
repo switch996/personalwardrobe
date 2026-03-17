@@ -1,10 +1,8 @@
-import 'package:flutter/material.dart';
-
+﻿import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../design/ds.dart';
 import '../design/widgets.dart';
-import '../pages/outfit_detail_page.dart';
 import '../pages/virtual_closet_page.dart';
 import '../store/local_store.dart';
 
@@ -14,11 +12,13 @@ class TodayPage extends StatelessWidget {
     required this.store,
     required this.refresh,
     required this.onRefresh,
+    this.onNavigateTab,
   });
 
   final LocalStore store;
   final ValueNotifier<int> refresh;
   final VoidCallback onRefresh;
+  final ValueChanged<int>? onNavigateTab;
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +31,7 @@ class TodayPage extends StatelessWidget {
             ? todays.first.imagePath
             : (store.outfits.isNotEmpty ? store.outfits.first.imagePath : '');
         final heroHeight =
-            (MediaQuery.of(context).size.width - DsSpace.md * 2) * 1.2;
+            (MediaQuery.of(context).size.width - DsSpace.md * 2) * 0.95;
 
         return Scaffold(
           backgroundColor: DsColors.paper,
@@ -43,30 +43,17 @@ class TodayPage extends StatelessWidget {
                 const SizedBox(height: DsSpace.md),
                 _HeroCard(
                   imagePath: heroImage,
-                  height: heroHeight.clamp(360, 560).toDouble(),
+                  height: heroHeight.clamp(280, 460).toDouble(),
                   onCameraTap: () => _pickImageAndSave(context, now),
                 ),
                 const SizedBox(height: DsSpace.md),
-                _ClosetBanner(
-                  onTap: () async {
-                    await Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => VirtualClosetPage(
-                          store: store,
-                          refresh: refresh,
-                          onRefresh: onRefresh,
-                        ),
-                      ),
-                    );
-                  },
+                _VirtualClosetDoorCard(
+                  store: store,
+                  refresh: refresh,
+                  onRefresh: onRefresh,
+                  onNavigateTab: onNavigateTab,
                 ),
-                _WeekSection(
-                  StoreSnapshot(
-                    store: store,
-                    refresh: refresh,
-                    onRefresh: onRefresh,
-                  ),
-                ),
+                const SizedBox(height: DsSpace.md),
               ],
             ),
           ),
@@ -117,9 +104,9 @@ class TodayPage extends StatelessWidget {
     );
     onRefresh();
     if (!context.mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('已保存今日穿搭')));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('已保存今日穿搭')),
+    );
   }
 }
 
@@ -154,7 +141,7 @@ class _HeaderRow extends StatelessWidget {
                   ),
                   SizedBox(width: 4),
                   Text(
-                    '晴 24℃',
+                    '晴 24°C',
                     style: TextStyle(
                       color: Color(0xFFD32F2F),
                       fontSize: 18,
@@ -183,9 +170,9 @@ class _HeaderRow extends StatelessWidget {
           ),
           child: IconButton(
             onPressed: () {
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(const SnackBar(content: Text('通知中心即将开放')));
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('通知中心即将开放')),
+              );
             },
             icon: const Icon(Icons.notifications, color: Color(0xFF4D4D4D)),
           ),
@@ -227,6 +214,7 @@ class _HeroCard extends StatelessWidget {
                   path: imagePath,
                   width: double.infinity,
                   height: double.infinity,
+                  fit: BoxFit.scaleDown,
                 ),
               ),
             ),
@@ -241,7 +229,7 @@ class _HeroCard extends StatelessWidget {
                 width: 58,
                 height: 58,
                 decoration: const BoxDecoration(
-                  color: Color.fromARGB(255, 236, 120, 48),
+                  color: Color(0xFFD32F2F),
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
@@ -265,140 +253,123 @@ class _HeroCard extends StatelessWidget {
   }
 }
 
-class _ClosetBanner extends StatelessWidget {
-  const _ClosetBanner({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: DsRadius.lg,
-      child: Container(
-        height: 160,
-        decoration: BoxDecoration(
-          borderRadius: DsRadius.lg,
-          gradient: const LinearGradient(
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
-            colors: [Color(0xFF111111), Color(0xFF2A2A2A)],
-          ),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x22000000),
-              blurRadius: 20,
-              offset: Offset(0, 10),
-            ),
-          ],
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-        child: Row(
-          children: [
-            Container(
-              width: 98,
-              height: 98,
-              decoration: BoxDecoration(
-                color: const Color(0x2DFFFFFF),
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: const Color(0x40FFFFFF)),
-              ),
-              child: const Icon(
-                Icons.door_sliding_outlined,
-                color: Color(0xFFE5E5E5),
-                size: 52,
-              ),
-            ),
-            const SizedBox(width: 20),
-            const Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '进入虚拟衣橱',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    '管理你的个人时尚收藏',
-                    style: TextStyle(
-                      color: Color(0xFFCACACA),
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    '点击推门开启 →',
-                    style: TextStyle(
-                      color: Color(0xFFE53935),
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class StoreSnapshot {
-  const StoreSnapshot({
+class _VirtualClosetDoorCard extends StatefulWidget {
+  const _VirtualClosetDoorCard({
     required this.store,
     required this.refresh,
     required this.onRefresh,
+    this.onNavigateTab,
   });
 
   final LocalStore store;
   final ValueNotifier<int> refresh;
   final VoidCallback onRefresh;
+  final ValueChanged<int>? onNavigateTab;
+
+  @override
+  State<_VirtualClosetDoorCard> createState() => _VirtualClosetDoorCardState();
 }
 
-class _WeekSection extends StatelessWidget {
-  const _WeekSection(this.snapshot);
+class _VirtualClosetDoorCardState extends State<_VirtualClosetDoorCard>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  bool _opening = false;
 
-  final StoreSnapshot snapshot;
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 40),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleTap() async {
+    if (_opening) return;
+    _opening = true;
+
+    await _controller.forward();
+    if (!mounted) return;
+
+    final targetTab = await Navigator.of(context).push<int>(
+      MaterialPageRoute(
+        builder: (_) => VirtualClosetPage(
+          store: widget.store,
+          refresh: widget.refresh,
+          onRefresh: widget.onRefresh,
+          onNavigateTab: widget.onNavigateTab,
+        ),
+      ),
+    );
+
+    if (!mounted) return;
+    if (targetTab != null) {
+      widget.onNavigateTab?.call(targetTab);
+    }
+    _controller.value = 0;
+    _opening = false;
+  }
 
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now();
-    final start = DateTime(now.year, now.month, now.day - 3);
-    final days = List<DateTime>.generate(
-      7,
-      (index) => DateTime(start.year, start.month, start.day + index),
-    );
-
-    return Column(
-      children: [
-        Row(
+    return InkWell(
+      onTap: _handleTap,
+      borderRadius: DsRadius.lg,
+      child: Container(
+        height: 260,
+        decoration: BoxDecoration(
+          borderRadius: DsRadius.lg,
+          gradient: const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFF151515), Color(0xFF0D0D0D)],
+          ),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x33000000),
+              blurRadius: 24,
+              offset: Offset(0, 12),
+            ),
+          ],
+        ),
+        child: Stack(
           children: [
-            const Expanded(
-              child: Text(
-                '本周穿搭日历',
-                style: TextStyle(
-                  color: DsColors.ink,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w800,
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: DsRadius.lg,
+                  border: Border.all(color: const Color(0x33FFFFFF)),
                 ),
               ),
             ),
-            TextButton(
-              onPressed: () {
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(const SnackBar(content: Text('切换到“日历”页查看全部记录')));
-              },
-              child: const Text(
-                '查看全部',
+            const Positioned(
+              left: 20,
+              right: 20,
+              top: 18,
+              child: Text(
+                'ENTER VIRTUAL CLOSET',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  letterSpacing: 1.2,
+                  color: Color(0xFFEEEEEE),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            const Positioned(
+              left: 20,
+              right: 20,
+              bottom: 18,
+              child: Text(
+                '点击推开门进入',
+                textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Color(0xFFD32F2F),
                   fontSize: 16,
@@ -406,125 +377,69 @@ class _WeekSection extends StatelessWidget {
                 ),
               ),
             ),
-          ],
-        ),
-        const SizedBox(height: DsSpace.sm),
-        Row(
-          children: List<Widget>.generate(days.length, (index) {
-            final day = days[index];
-            final entries = snapshot.store.outfitsOn(day);
-            return Expanded(
+            Positioned.fill(
               child: Padding(
-                padding: EdgeInsets.only(
-                  right: index == days.length - 1 ? 0 : 6,
-                ),
-                child: _WeekDayCard(
-                  day: day,
-                  isToday: _isSameDay(day, now),
-                  hasRecord: entries.isNotEmpty,
-                  onTap: () async {
-                    if (entries.isEmpty) return;
-                    await Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => OutfitDetailPage(
-                          entryId: entries.first.id,
-                          store: snapshot.store,
-                          refresh: snapshot.refresh,
-                          onRefresh: snapshot.onRefresh,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            );
-          }),
-        ),
-      ],
-    );
-  }
-}
-
-class _WeekDayCard extends StatelessWidget {
-  const _WeekDayCard({
-    required this.day,
-    required this.isToday,
-    required this.hasRecord,
-    required this.onTap,
-  });
-
-  final DateTime day;
-  final bool isToday;
-  final bool hasRecord;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final label = _weekdayLabel(day.weekday);
-    final selected = isToday && hasRecord;
-    final outlined = isToday && !hasRecord;
-
-    return InkWell(
-      borderRadius: BorderRadius.circular(14),
-      onTap: onTap,
-      child: Container(
-        height: 72,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(14),
-          color: selected ? const Color(0xFFD32F2F) : const Color(0xFFF5F5F5),
-          border: outlined
-              ? Border.all(color: const Color(0xFFD32F2F), width: 1.3)
-              : null,
-          boxShadow: selected
-              ? const [
-                  BoxShadow(
-                    color: Color(0x28D32F2F),
-                    blurRadius: 14,
-                    offset: Offset(0, 8),
+                padding: const EdgeInsets.fromLTRB(22, 46, 22, 46),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(18),
+                  child: DecoratedBox(
+                    decoration: const BoxDecoration(color: Color(0xFF101010)),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final panelWidth = constraints.maxWidth / 2;
+                        return AnimatedBuilder(
+                          animation: _controller,
+                          builder: (context, child) {
+                            final t = Curves.easeOutCubic.transform(
+                              _controller.value,
+                            );
+                            return Stack(
+                              children: [
+                                Positioned.fill(
+                                  child: Container(
+                                    color: const Color(0xFF050505),
+                                    alignment: Alignment.center,
+                                    child: const Icon(
+                                      Icons.checkroom_rounded,
+                                      color: Color(0xFFD32F2F),
+                                      size: 64,
+                                    ),
+                                  ),
+                                ),
+                                Positioned(
+                                  left: -panelWidth * 0.55 * t,
+                                  top: 0,
+                                  bottom: 0,
+                                  width: panelWidth,
+                                  child: Transform(
+                                    alignment: Alignment.centerRight,
+                                    transform: Matrix4.identity()
+                                      ..setEntry(3, 2, 0.0012)
+                                      ..rotateY(-0.8 * t),
+                                    child: const _DoorPanel(left: true),
+                                  ),
+                                ),
+                                Positioned(
+                                  right: -panelWidth * 0.55 * t,
+                                  top: 0,
+                                  bottom: 0,
+                                  width: panelWidth,
+                                  child: Transform(
+                                    alignment: Alignment.centerLeft,
+                                    transform: Matrix4.identity()
+                                      ..setEntry(3, 2, 0.0012)
+                                      ..rotateY(0.8 * t),
+                                    child: const _DoorPanel(left: false),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      },
+                    ),
                   ),
-                ]
-              : null,
-        ),
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Column(
-          children: [
-            Text(
-              label,
-              style: TextStyle(
-                color: selected ? Colors.white : const Color(0xFF8E8E8E),
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(height: 1),
-            Text(
-              '${day.day}',
-              style: TextStyle(
-                color: selected ? Colors.white : DsColors.ink,
-                fontSize: 13,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Container(
-              width: 18,
-              height: 18,
-              decoration: BoxDecoration(
-                color: selected
-                    ? const Color(0x33FFFFFF)
-                    : (hasRecord
-                          ? const Color(0x1AD32F2F)
-                          : const Color(0xFFE6E6E6)),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                hasRecord ? Icons.check : Icons.add,
-                size: 12,
-                color: selected
-                    ? Colors.white
-                    : (hasRecord
-                          ? const Color(0xFFD32F2F)
-                          : const Color(0xFF9E9E9E)),
+                ),
               ),
             ),
           ],
@@ -534,11 +449,50 @@ class _WeekDayCard extends StatelessWidget {
   }
 }
 
-String _weekdayLabel(int weekday) {
-  const labels = <String>['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
-  return labels[weekday - 1];
-}
+class _DoorPanel extends StatelessWidget {
+  const _DoorPanel({required this.left});
 
-bool _isSameDay(DateTime a, DateTime b) {
-  return a.year == b.year && a.month == b.month && a.day == b.day;
+  final bool left;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: left ? Alignment.centerLeft : Alignment.centerRight,
+          end: left ? Alignment.centerRight : Alignment.centerLeft,
+          colors: const [Color(0xFF2B2B2B), Color(0xFF171717)],
+        ),
+        border: Border.all(color: const Color(0xFF3C3C3C)),
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            left: 8,
+            right: 8,
+            top: 10,
+            bottom: 10,
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: const Color(0xFF474747)),
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+          ),
+          Align(
+            alignment: left ? Alignment.centerRight : Alignment.centerLeft,
+            child: Container(
+              width: 8,
+              height: 44,
+              margin: const EdgeInsets.symmetric(horizontal: 10),
+              decoration: BoxDecoration(
+                color: const Color(0xFFD32F2F),
+                borderRadius: BorderRadius.circular(6),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

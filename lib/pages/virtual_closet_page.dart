@@ -1116,7 +1116,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
                           );
                         },
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Expanded(
                               child: Container(
@@ -1124,52 +1124,27 @@ class _CategoryListPageState extends State<CategoryListPage> {
                                   color: const Color(0xFFEDEDED),
                                   borderRadius: BorderRadius.circular(14),
                                 ),
-                                child: Stack(
-                                  children: [
-                                    Positioned.fill(
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8),
-                                        child: AppImage(
-                                          path: item.imagePath,
-                                          width: double.infinity,
-                                          height: double.infinity,
-                                          fit: BoxFit.contain,
-                                          radius: BorderRadius.circular(14),
-                                        ),
-                                      ),
-                                    ),
-                                    Positioned(
-                                      right: 8,
-                                      top: 8,
-                                      child: Icon(
-                                        Icons.favorite_rounded,
-                                        size: 18,
-                                        color: DsColors.red,
-                                      ),
-                                    ),
-                                  ],
+                                child: AppImage(
+                                  path: item.imagePath,
+                                  width: double.infinity,
+                                  height: double.infinity,
+                                  fit: BoxFit.cover,
+                                  radius: BorderRadius.circular(14),
                                 ),
                               ),
                             ),
                             const SizedBox(height: 8),
-                            Text(
-                              item.name,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w700,
-                                fontSize: 16,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              LocalStore.categoryLabel(item.category),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                color: Color(0xFFD32F2F),
-                                fontWeight: FontWeight.w600,
-                                fontSize: 13,
+                            SizedBox(
+                              width: double.infinity,
+                              child: Text(
+                                item.name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 16,
+                                ),
                               ),
                             ),
                           ],

@@ -30,9 +30,12 @@ import java.util.Locale;
 public class ClosetItemService {
 
     private final ClosetItemRepository closetItemRepository;
+    private final ClosetCategoryProperties closetCategoryProperties;
 
-    public ClosetItemService(ClosetItemRepository closetItemRepository) {
+    public ClosetItemService(ClosetItemRepository closetItemRepository,
+                             ClosetCategoryProperties closetCategoryProperties) {
         this.closetItemRepository = closetItemRepository;
+        this.closetCategoryProperties = closetCategoryProperties;
     }
 
     @Transactional
@@ -184,7 +187,7 @@ public class ClosetItemService {
     }
 
     private void validateCategory(String category) {
-        if (!ClosetCategories.ALLOWED.contains(category)) {
+        if (!closetCategoryProperties.allowedKeys().contains(category)) {
             throw new BadRequestException("BAD_REQUEST", "Invalid category.");
         }
     }

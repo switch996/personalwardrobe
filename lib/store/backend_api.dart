@@ -1,4 +1,4 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 import 'dart:io';
 
 class BackendApi {
@@ -84,6 +84,13 @@ class BackendApi {
     await _requestJson(method: 'DELETE', path: '/outfits/$id');
   }
 
+  Future<List<Map<String, dynamic>>> listClosetCategories() async {
+    final response = await _requestJson(method: 'GET', path: '/closet-categories');
+    return (response['items'] as List<dynamic>? ?? const <dynamic>[])
+        .whereType<Map>()
+        .map((e) => Map<String, dynamic>.from(e))
+        .toList();
+  }
   Future<List<Map<String, dynamic>>> listClosetItems() async {
     return _listPaged(
       '/closet-items',

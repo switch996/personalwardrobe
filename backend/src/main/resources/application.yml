@@ -1,4 +1,4 @@
-server:
+﻿server:
   port: 8080
   servlet:
     context-path: /api/v1
@@ -24,6 +24,22 @@ spring:
       max-request-size: 10MB
 
 app:
+  closet:
+    categories:
+      - key: top
+        label: 上装
+      - key: bottom
+        label: 下装
+      - key: outerwear
+        label: 外套
+      - key: shoes
+        label: 鞋子
+      - key: bag
+        label: 包袋
+      - key: accessory
+        label: 配饰
+      - key: jewelry
+        label: 首饰
   jwt:
     secret: ${JWT_SECRET:cGVyc29uYWwtd2FyZHJvYmUtand0LXNlY3JldC1rZXktZm9yLWRldg==}
     access-token-expiration-seconds: 3600
@@ -36,4 +52,3 @@ app:
       enabled: ${AUTH_DEV_BYPASS_ENABLED:false}
       user-id: ${AUTH_DEV_USER_ID:dev_user}
       phone: ${AUTH_DEV_PHONE:13800000000}
-

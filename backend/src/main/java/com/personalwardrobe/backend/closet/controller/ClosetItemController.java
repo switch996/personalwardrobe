@@ -3,6 +3,7 @@ package com.personalwardrobe.backend.closet.controller;
 import com.personalwardrobe.backend.closet.dto.ClosetItemCreateRequest;
 import com.personalwardrobe.backend.closet.dto.ClosetItemResponse;
 import com.personalwardrobe.backend.closet.dto.ClosetItemUpdateRequest;
+import com.personalwardrobe.backend.closet.service.ClosetCategoryProperties;
 import com.personalwardrobe.backend.closet.service.ClosetItemService;
 import com.personalwardrobe.backend.common.web.DeleteResponse;
 import com.personalwardrobe.backend.common.web.PagedResponse;
@@ -18,13 +19,23 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 @RestController
 public class ClosetItemController {
 
     private final ClosetItemService closetItemService;
+    private final ClosetCategoryProperties closetCategoryProperties;
 
-    public ClosetItemController(ClosetItemService closetItemService) {
+    public ClosetItemController(ClosetItemService closetItemService,
+                                ClosetCategoryProperties closetCategoryProperties) {
         this.closetItemService = closetItemService;
+        this.closetCategoryProperties = closetCategoryProperties;
+    }
+
+    @GetMapping("/closet-categories")
+    public Map<String, Object> categories() {
+        return Map.of("items", closetCategoryProperties.normalizedCategories());
     }
 
     @PostMapping("/closet-items")

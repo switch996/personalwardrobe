@@ -22,35 +22,39 @@ class LocalStore {
     '极简',
   ];
 
-  static const List<String> closetCategories = <String>[
+  static const List<String> _defaultClosetCategories = <String>[
     'top',
     'bottom',
-    'shoes',
-    'accessory',
     'outerwear',
-    'dress',
+    'shoes',
     'bag',
+    'accessory',
+    'jewelry',
   ];
 
-  static const Map<String, String> closetCategoryLabels = <String, String>{
+  static const Map<String, String> _defaultClosetCategoryLabels = <String, String>{
     'top': '上装',
     'bottom': '下装',
-    'shoes': '鞋子',
-    'accessory': '配饰',
     'outerwear': '外套',
-    'dress': '连衣裙',
+    'shoes': '鞋子',
     'bag': '包袋',
+    'accessory': '配饰',
+    'jewelry': '首饰',
   };
 
-  static const Map<String, List<String>> closetSubCategories = <String, List<String>>{
+  static const Map<String, List<String>> _defaultClosetSubCategories = <String, List<String>>{
     'top': ['长袖', '短袖', 'T恤', '衬衫'],
     'bottom': ['长裤', '短裤', '半身裙', '牛仔'],
-    'shoes': ['运动鞋', '乐福鞋', '高跟鞋', '靴子'],
-    'accessory': ['项链', '耳饰', '帽子', '腰带'],
     'outerwear': ['风衣', '西装', '大衣', '披肩'],
-    'dress': ['连衣裙', '半裙', '礼服'],
+    'shoes': ['运动鞋', '乐福鞋', '高跟鞋', '靴子'],
     'bag': ['手提包', '斜挎包', '托特包', '双肩包'],
+    'accessory': ['帽子', '围巾', '腰带'],
+    'jewelry': ['项链', '戒指', '耳饰'],
   };
+
+  static List<String> closetCategories = List<String>.from(_defaultClosetCategories);
+  static Map<String, String> closetCategoryLabels = Map<String, String>.from(_defaultClosetCategoryLabels);
+  static Map<String, List<String>> closetSubCategories = _cloneSubCategoryMap(_defaultClosetSubCategories);
 
   static const int _quickWearMaxItems = 12;
   static const String _closetMetaPrefix = '[PW_META]';
@@ -73,9 +77,53 @@ class LocalStore {
     return closetSubCategories[category] ?? const <String>[];
   }
 
+  Future<void> _loadClosetCategoryConfig() async {
+    final remote = await _api.listClosetCategories();
+    _applyClosetCategoryConfig(remote);
+  }
+
+  static void _applyClosetCategoryConfig(List<Map<String, dynamic>> items) {
+    if (items.isEmpty) {
+      _resetClosetCategoryConfig();
+      return;
+    }
+
+    final keys = <String>[];
+    final labels = <String, String>{};
+    for (final item in items) {
+      final key = _safe(item['key']);
+      if (key.isEmpty || labels.containsKey(key)) continue;
+      final label = _safe(item['label']);
+      keys.add(key);
+      labels[key] = label.isEmpty ? key : label;
+    }
+
+    if (keys.isEmpty) {
+      _resetClosetCategoryConfig();
+      return;
+    }
+
+    closetCategories = keys;
+    closetCategoryLabels = labels;
+
+    final nextSubCategories = <String, List<String>>{};
+    for (final key in keys) {
+      nextSubCategories[key] =
+          List<String>.from(_defaultClosetSubCategories[key] ?? const <String>[]);
+    }
+    closetSubCategories = nextSubCategories;
+  }
+
+  static void _resetClosetCategoryConfig() {
+    closetCategories = List<String>.from(_defaultClosetCategories);
+    closetCategoryLabels = Map<String, String>.from(_defaultClosetCategoryLabels);
+    closetSubCategories = _cloneSubCategoryMap(_defaultClosetSubCategories);
+  }
+
   Future<void> loadAll() async {
     try {
       await _api.ensureAuthenticated();
+      await _loadClosetCategoryConfig();
       final outfitItems = await _api.listOutfits();
       final closetItems = await _api.listClosetItems();
 
@@ -88,6 +136,7 @@ class LocalStore {
       _sortInPlace();
       _syncQuickWearFromTodayOutfit();
     } catch (_) {
+      _resetClosetCategoryConfig();
       outfits.clear();
       closet.clear();
       todaysQuickWearItemIds.clear();
@@ -383,7 +432,10 @@ class LocalStore {
   }
 
   String _normalizeCategory(String category) {
-    return closetCategories.contains(category) ? category : closetCategories.first;
+    final fallback = closetCategories.isNotEmpty
+        ? closetCategories.first
+        : _defaultClosetCategories.first;
+    return closetCategories.contains(category) ? category : fallback;
   }
 
   String _composeClosetNote({
@@ -449,9 +501,23 @@ class LocalStore {
     return value == null ? '' : '$value';
   }
 
+  static String _safe(Object? value) {
+    return value == null ? '' : '$value'.trim();
+  }
+
   List<dynamic> _asList(Object? value) {
     if (value is List<dynamic>) return value;
     return const <dynamic>[];
+  }
+
+  static Map<String, List<String>> _cloneSubCategoryMap(
+    Map<String, List<String>> source,
+  ) {
+    final cloned = <String, List<String>>{};
+    source.forEach((key, value) {
+      cloned[key] = List<String>.from(value);
+    });
+    return cloned;
   }
 
   static String _normalizeGender(String value) {
@@ -472,4 +538,3 @@ class _ClosetNoteParsed {
   final String subCategory;
   final double price;
 }
-

@@ -146,12 +146,6 @@ class ClosetItemDetailPage extends StatelessWidget {
                   value: _formatDate(item.createdAt),
                 ),
                 _InfoRow(icon: Icons.category_outlined, label: '分类', value: LocalStore.categoryLabel(item.category)),
-                if (item.subCategory.isNotEmpty)
-                  _InfoRow(
-                    icon: Icons.style_outlined,
-                    label: '子分类',
-                    value: item.subCategory,
-                  ),
                 if (item.brand.isNotEmpty)
                   _InfoRow(
                     icon: Icons.store_mall_directory_outlined,

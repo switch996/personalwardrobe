@@ -37,7 +37,6 @@ class _ClosetItemEditorSheetState extends State<_ClosetItemEditorSheet> {
   late final TextEditingController _note;
   late final TextEditingController _price;
   late String _category;
-  late String _subCategory;
   String _pickedImagePath = '';
   final ImagePicker _picker = ImagePicker();
 
@@ -53,7 +52,6 @@ class _ClosetItemEditorSheetState extends State<_ClosetItemEditorSheet> {
       text: editing == null || editing.price == 0 ? '' : editing.price.toStringAsFixed(0),
     );
     _category = editing?.category ?? LocalStore.closetCategories.first;
-    _subCategory = editing?.subCategory ?? '';
   }
 
   @override
@@ -70,7 +68,6 @@ class _ClosetItemEditorSheetState extends State<_ClosetItemEditorSheet> {
   Widget build(BuildContext context) {
     final editing = widget.editing;
     final previewPath = _pickedImagePath.isNotEmpty ? _pickedImagePath : (editing?.imagePath ?? '');
-    final subOptions = LocalStore.subCategoryOptions(_category);
     final textTheme = Theme.of(context).textTheme;
 
     return SafeArea(
@@ -114,30 +111,8 @@ class _ClosetItemEditorSheetState extends State<_ClosetItemEditorSheet> {
                         if (value == null) return;
                         setState(() {
                           _category = value;
-                          _subCategory = '';
                         });
                       },
-                    ),
-                    const SizedBox(height: DsSpace.sm),
-                    DropdownButtonFormField<String>(
-                      initialValue: _subCategory.isEmpty ? null : _subCategory,
-                      decoration: _fieldDecoration('子分类'),
-                      items: subOptions
-                          .map(
-                            (value) => DropdownMenuItem<String>(
-                              value: value,
-                              child: Text(value, style: const TextStyle(fontSize: 14)),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: subOptions.isEmpty
-                          ? null
-                          : (value) {
-                              setState(() {
-                                _subCategory = value ?? '';
-                              });
-                            },
-                      hint: subOptions.isEmpty ? const Text('该分类暂无子项', style: TextStyle(fontSize: 13)) : null,
                     ),
                     const SizedBox(height: DsSpace.sm),
                     _FieldBlock(
@@ -250,7 +225,7 @@ class _ClosetItemEditorSheetState extends State<_ClosetItemEditorSheet> {
       imageSourcePath: _pickedImagePath,
       name: _name.text,
       category: _category,
-      subCategory: _subCategory,
+      subCategory: widget.editing?.subCategory ?? '',
       brand: _brand.text,
       color: _color.text,
       note: _note.text,

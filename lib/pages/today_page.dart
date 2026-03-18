@@ -52,13 +52,13 @@ class TodayPage extends StatelessWidget {
                   placeholderSeed: fallbackSeed,
                   onCameraTap: () => _pickImageAndSave(context, now),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 10),
                 _TodayWearList(
                   store: store,
                   refresh: refresh,
                   onRefresh: onRefresh,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 10),
                 _ClosetSummaryCard(
                   onEnterCloset: () => _openCloset(context),
                 ),
@@ -317,8 +317,6 @@ class _TodayWearList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = store.quickWearItemsForToday();
-    final now = DateTime.now();
-    final dateLabel = '${now.month}月${now.day}日';
     const accentBackground = Color(0x1AD32F2F);
     const accentBorder = Color(0x33D32F2F);
     const chipBackground = Color(0x33D32F2F);
@@ -339,7 +337,7 @@ class _TodayWearList extends StatelessWidget {
           ),
         ],
       ),
-      padding: const EdgeInsets.fromLTRB(20, 22, 20, 26),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -371,14 +369,6 @@ class _TodayWearList extends StatelessWidget {
                   ),
                 ),
               ),
-              const Spacer(),
-              Text(
-                dateLabel,
-                style: const TextStyle(
-                  color: Color(0xFFD32F2F),
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
             ],
           ),
           const SizedBox(height: 10),
@@ -393,7 +383,7 @@ class _TodayWearList extends StatelessWidget {
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
-                  '在单品详情点击“立刻穿上”添加，长按单品卡片可删除。',
+                  '长按单品卡片可移除',
                   style: const TextStyle(
                     color: Color(0xFFD32F2F),
                     fontSize: 13,
@@ -506,7 +496,6 @@ class _QuickWearItemCardState extends State<_QuickWearItemCard> {
 
   @override
   Widget build(BuildContext context) {
-    final brandText = widget.item.brand.isEmpty ? '未设置品牌' : widget.item.brand;
     return SizedBox(
       width: 140,
       child: Column(
@@ -551,18 +540,7 @@ class _QuickWearItemCardState extends State<_QuickWearItemCard> {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
-            ),
-          ),
-          const SizedBox(height: 2),
-          SizedBox(
-            width: double.infinity,
-            child: Text(
-              '${LocalStore.categoryLabel(widget.item.category)} · $brandText',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 12, color: DsColors.mutedInk),
+                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
             ),
           ),
         ],

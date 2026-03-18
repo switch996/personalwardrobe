@@ -54,114 +54,119 @@ class ClosetItemDetailPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: DsColors.paper,
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-          children: [
-            Row(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 392),
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
               children: [
-                _CircleButton(
-                  icon: Icons.arrow_back_ios_new_rounded,
-                  onTap: () => Navigator.of(context).pop(),
-                ),
-                const Spacer(),
-                const Text('单品详情', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: DsColors.ink)),
-                const Spacer(),
-                _CircleButton(
-                  icon: Icons.share_outlined,
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('分享功能即将上线')));
-                  },
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(28),
-                color: Colors.white,
-                boxShadow: const [BoxShadow(color: DsColors.shadow, blurRadius: 25, offset: Offset(0, 14))],
-              ),
-              clipBehavior: Clip.antiAlias,
-              child: AppImage(
-                path: item.imagePath,
-                width: double.infinity,
-                fit: BoxFit.fitWidth,
-                radius: BorderRadius.circular(28),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(item.name, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: DsColors.ink)),
-                      const SizedBox(height: 6),
-                      Text(
-                        _tagLine(item),
-                        style: const TextStyle(color: Color(0xFFD32F2F), fontWeight: FontWeight.w600),
-                      ),
-                    ],
-                  ),
-                ),
-                Wrap(
-                  spacing: 10,
-                  runSpacing: 8,
+                Row(
                   children: [
-                    _ActionPill(
-                      icon: Icons.edit_outlined,
-                      onTap: handleEdit,
-                      background: const Color(0xFFFFEBEE),
-                      iconColor: const Color(0xFFD32F2F),
-                      tooltip: '修改资料',
+                    _CircleButton(
+                      icon: Icons.arrow_back_ios_new_rounded,
+                      onTap: () => Navigator.of(context).pop(),
                     ),
-                    _ActionPill(
-                      icon: Icons.delete_outline,
-                      onTap: handleDelete,
-                      background: const Color(0xFFFFEBEE),
-                      iconColor: const Color(0xFFB71C1C),
-                      tooltip: '删除单品',
-                    ),
-                    _ActionPill(
-                      icon: Icons.checkroom_outlined,
-                      onTap: () => handleTry(),
-                      background: const Color(0xFFFFEBEE),
-                      iconColor: const Color(0xFFD32F2F),
-                      tooltip: '立刻穿上',
+                    const Spacer(),
+                    const Text('单品详情', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: DsColors.ink)),
+                    const Spacer(),
+                    _CircleButton(
+                      icon: Icons.share_outlined,
+                      onTap: () {
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('分享功能即将上线')));
+                      },
                     ),
                   ],
                 ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            _InfoCard(
-              children: [
-                _InfoRow(icon: Icons.price_check_outlined, label: '价格', value: item.price <= 0 ? '未填写' : '¥${item.price.toStringAsFixed(0)}', highlight: item.price > 0),
-                _InfoRow(
-                  icon: Icons.event_available_outlined,
-                  label: '购买时间',
-                  value: _formatDate(item.createdAt),
-                ),
-                _InfoRow(icon: Icons.category_outlined, label: '分类', value: LocalStore.categoryLabel(item.category)),
-                if (item.brand.isNotEmpty)
-                  _InfoRow(
-                    icon: Icons.store_mall_directory_outlined,
-                    label: '品牌',
-                    value: item.brand,
+                const SizedBox(height: 20),
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(28),
+                    color: Colors.white,
+                    boxShadow: const [BoxShadow(color: DsColors.shadow, blurRadius: 25, offset: Offset(0, 14))],
                   ),
-                _InfoRow(icon: Icons.palette_outlined, label: '颜色', value: item.color.isEmpty ? '未填写' : item.color),
+                  clipBehavior: Clip.antiAlias,
+                  child: AppImage(
+                    path: item.imagePath,
+                    width: double.infinity,
+                    fit: BoxFit.fitWidth,
+                    radius: BorderRadius.circular(28),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(item.name, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: DsColors.ink)),
+                          const SizedBox(height: 6),
+                          Text(
+                            _tagLine(item),
+                            style: const TextStyle(color: Color(0xFFD32F2F), fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 8,
+                      children: [
+                        _ActionPill(
+                          icon: Icons.edit_outlined,
+                          onTap: handleEdit,
+                          background: const Color(0xFFFFEBEE),
+                          iconColor: const Color(0xFFD32F2F),
+                          tooltip: '修改资料',
+                        ),
+                        _ActionPill(
+                          icon: Icons.delete_outline,
+                          onTap: handleDelete,
+                          background: const Color(0xFFFFEBEE),
+                          iconColor: const Color(0xFFB71C1C),
+                          tooltip: '删除单品',
+                        ),
+                        _ActionPill(
+                          icon: Icons.checkroom_outlined,
+                          onTap: () => handleTry(),
+                          background: const Color(0xFFFFEBEE),
+                          iconColor: const Color(0xFFD32F2F),
+                          tooltip: '立刻穿上',
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                _InfoCard(
+                  children: [
+                    _InfoRow(icon: Icons.price_check_outlined, label: '价格', value: item.price <= 0 ? '未填写' : '¥${item.price.toStringAsFixed(0)}', highlight: item.price > 0),
+                    _InfoRow(
+                      icon: Icons.event_available_outlined,
+                      label: '购买时间',
+                      value: _formatDate(item.createdAt),
+                    ),
+                    _InfoRow(icon: Icons.category_outlined, label: '分类', value: LocalStore.categoryLabel(item.category)),
+                    if (item.brand.isNotEmpty)
+                      _InfoRow(
+                        icon: Icons.store_mall_directory_outlined,
+                        label: '品牌',
+                        value: item.brand,
+                      ),
+                    _InfoRow(icon: Icons.palette_outlined, label: '颜色', value: item.color.isEmpty ? '未填写' : item.color),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                const Text('备注信息', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: DsColors.ink)),
+                const SizedBox(height: 8),
+                Text(
+                  item.note.isEmpty ? '这件单品还没有备注，试着写下灵感与搭配建议吧。' : item.note,
+                  style: const TextStyle(color: DsColors.mutedInk, height: 1.4),
+                ),
               ],
             ),
-            const SizedBox(height: 20),
-            const Text('备注信息', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: DsColors.ink)),
-            const SizedBox(height: 8),
-            Text(
-              item.note.isEmpty ? '这件单品还没有备注，试着写下灵感与搭配建议吧。' : item.note,
-              style: const TextStyle(color: DsColors.mutedInk, height: 1.4),
-            ),
-          ],
+          ),
         ),
       ),
     );

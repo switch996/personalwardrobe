@@ -52,13 +52,13 @@ class ClosetItemDetailPage extends StatelessWidget {
     }
 
     return Scaffold(
-      backgroundColor: DsColors.paper,
+      backgroundColor: const Color(0xFFF5F5F5),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 392),
             child: ListView(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+              padding: const EdgeInsets.fromLTRB(18, 18, 18, 30),
               children: [
                 Row(
                   children: [
@@ -77,22 +77,22 @@ class ClosetItemDetailPage extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 24),
                 Container(
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(28),
-                    color: Colors.white,
-                    boxShadow: const [BoxShadow(color: DsColors.shadow, blurRadius: 25, offset: Offset(0, 14))],
+                    borderRadius: BorderRadius.circular(20),
+                    color: const Color(0xFFEFEFEF),
+                    boxShadow: const [BoxShadow(color: DsColors.shadow, blurRadius: 20, offset: Offset(0, 10))],
                   ),
                   clipBehavior: Clip.antiAlias,
                   child: AppImage(
                     path: item.imagePath,
                     width: double.infinity,
                     fit: BoxFit.fitWidth,
-                    radius: BorderRadius.circular(28),
+                    radius: BorderRadius.circular(20),
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 24),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -100,11 +100,11 @@ class ClosetItemDetailPage extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(item.name, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: DsColors.ink)),
+                          Text(item.name, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: DsColors.ink)),
                           const SizedBox(height: 6),
                           Text(
                             _tagLine(item),
-                            style: const TextStyle(color: Color(0xFFD32F2F), fontWeight: FontWeight.w600),
+                            style: const TextStyle(color: Color(0xFF8A8A8A), fontWeight: FontWeight.w600),
                           ),
                         ],
                       ),
@@ -116,29 +116,29 @@ class ClosetItemDetailPage extends StatelessWidget {
                         _ActionPill(
                           icon: Icons.edit_outlined,
                           onTap: handleEdit,
-                          background: const Color(0xFFFFEBEE),
-                          iconColor: const Color(0xFFD32F2F),
+                          background: const Color(0xFFECECEC),
+                          iconColor: const Color(0xFF2D2D2D),
                           tooltip: '修改资料',
                         ),
                         _ActionPill(
                           icon: Icons.delete_outline,
                           onTap: handleDelete,
-                          background: const Color(0xFFFFEBEE),
-                          iconColor: const Color(0xFFB71C1C),
+                          background: const Color(0xFFECECEC),
+                          iconColor: const Color(0xFFD32F2F),
                           tooltip: '删除单品',
                         ),
                         _ActionPill(
                           icon: Icons.checkroom_outlined,
                           onTap: () => handleTry(),
-                          background: const Color(0xFFFFEBEE),
-                          iconColor: const Color(0xFFD32F2F),
+                          background: const Color(0xFFECECEC),
+                          iconColor: const Color(0xFF2D2D2D),
                           tooltip: '立刻穿上',
                         ),
                       ],
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 20),
                 _InfoCard(
                   children: [
                     _InfoRow(icon: Icons.price_check_outlined, label: '价格', value: item.price <= 0 ? '未填写' : '¥${item.price.toStringAsFixed(0)}', highlight: item.price > 0),
@@ -157,9 +157,9 @@ class ClosetItemDetailPage extends StatelessWidget {
                     _InfoRow(icon: Icons.palette_outlined, label: '颜色', value: item.color.isEmpty ? '未填写' : item.color),
                   ],
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 24),
                 const Text('备注信息', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: DsColors.ink)),
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
                 Text(
                   item.note.isEmpty ? '这件单品还没有备注，试着写下灵感与搭配建议吧。' : item.note,
                   style: const TextStyle(color: DsColors.mutedInk, height: 1.4),
@@ -204,9 +204,9 @@ class _CircleButton extends StatelessWidget {
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: const Color(0xFFECECEC),
           shape: BoxShape.circle,
-          boxShadow: const [BoxShadow(color: DsColors.shadow, blurRadius: 12, offset: Offset(0, 6))],
+          boxShadow: const [BoxShadow(color: Color(0x12000000), blurRadius: 10, offset: Offset(0, 4))],
         ),
         child: Icon(icon, color: DsColors.ink, size: 18),
       ),
@@ -222,11 +222,12 @@ class _InfoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFEBEE),
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: const [BoxShadow(color: DsColors.shadow, blurRadius: 20, offset: Offset(0, 10))],
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFEAEAEA)),
+        boxShadow: const [BoxShadow(color: Color(0x12000000), blurRadius: 14, offset: Offset(0, 6))],
       ),
       child: Column(children: children),
     );
@@ -249,20 +250,20 @@ class _InfoRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
         children: [
           Container(
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: const Color(0xFFFFEBEE),
+              color: const Color(0xFFF1F1F1),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: const Color(0xFFD32F2F)),
+            child: Icon(icon, color: const Color(0xFF616161)),
           ),
           const SizedBox(width: 12),
-          Text(label, style: const TextStyle(color: Color(0xFF666666))),
+          Text(label, style: const TextStyle(color: Color(0xFF6E6E6E))),
           const Spacer(),
           Text(
             value.isEmpty ? '—' : value,
@@ -297,12 +298,12 @@ class _ActionPill extends StatelessWidget {
     final pill = GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 42,
-        height: 42,
+        width: 44,
+        height: 44,
         decoration: BoxDecoration(
           color: background,
-          borderRadius: BorderRadius.circular(17),
-          boxShadow: const [BoxShadow(color: DsColors.shadow, blurRadius: 12, offset: Offset(0, 6))],
+          shape: BoxShape.circle,
+          boxShadow: const [BoxShadow(color: Color(0x12000000), blurRadius: 10, offset: Offset(0, 4))],
         ),
         child: Icon(icon, color: iconColor, size: 20),
       ),

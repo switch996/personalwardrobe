@@ -8,25 +8,24 @@ import '../pages/closet_item_detail_page.dart';
 import '../sheets/closet_item_editor_sheet.dart';
 import '../store/local_store.dart';
 
-const List<_ClosetCategory> _showcaseCategories = <_ClosetCategory>[
-  _ClosetCategory(key: 'shirt', label: '上装', icon: Icons.checkroom_outlined),
-  _ClosetCategory(key: 'pants', label: '下装', icon: Icons.straighten_outlined),
-  _ClosetCategory(key: 'glasses', label: '眼镜', icon: Icons.visibility_outlined),
-  _ClosetCategory(key: 'shoes', label: '鞋子', icon: Icons.hiking_outlined),
-  _ClosetCategory(key: 'watch', label: '手表', icon: Icons.watch_outlined),
-  _ClosetCategory(key: 'watch_alt', label: '配饰', icon: Icons.watch_later_outlined),
+const List<_ClosetCategory> _closetCategories = <_ClosetCategory>[
+  _ClosetCategory(key: 'top', label: '上装'),
+  _ClosetCategory(key: 'bottom', label: '下装'),
+  _ClosetCategory(key: 'shoes', label: '鞋子'),
+  _ClosetCategory(key: 'outerwear', label: '外套'),
+  _ClosetCategory(key: 'bag', label: '包袋'),
+  _ClosetCategory(key: 'accessory', label: '配饰'),
+  _ClosetCategory(key: 'jewelry', label: '首饰'),
 ];
 
 class _ClosetCategory {
   const _ClosetCategory({
     required this.key,
     required this.label,
-    required this.icon,
   });
 
   final String key;
   final String label;
-  final IconData icon;
 }
 
 class VirtualClosetPage extends StatefulWidget {
@@ -50,7 +49,7 @@ class VirtualClosetPage extends StatefulWidget {
 class _VirtualClosetPageState extends State<VirtualClosetPage> {
   final TextEditingController _search = TextEditingController();
   final Set<String> _likedItemIds = <String>{};
-  String _selectedCategoryKey = _showcaseCategories.first.key;
+  String _selectedCategoryKey = _closetCategories.first.key;
 
   @override
   void initState() {
@@ -71,32 +70,31 @@ class _VirtualClosetPageState extends State<VirtualClosetPage> {
       builder: (context, value, child) {
         final items = _filteredItems();
         return Scaffold(
-          backgroundColor: const Color(0xFFF3F3F3),
+          backgroundColor: const Color(0xFFF6F6F6),
           body: SafeArea(
             child: ListView(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
               children: [
-                const SizedBox(height: 6),
-                _StoreSearchBar(controller: _search),
-                const SizedBox(height: 14),
                 const Text(
-                  'Categories',
+                  '我的虚拟衣橱',
                   style: TextStyle(
-                    fontSize: 30,
+                    fontSize: 24,
                     fontWeight: FontWeight.w800,
-                    color: Color(0xFF262626),
+                    color: Color(0xFF1F1F1F),
                   ),
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 10),
+                _StoreSearchBar(controller: _search),
+                const SizedBox(height: 12),
                 SizedBox(
-                  height: 94,
+                  height: 38,
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
-                    itemCount: _showcaseCategories.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 14),
+                    itemCount: _closetCategories.length,
+                    separatorBuilder: (_, __) => const SizedBox(width: 8),
                     itemBuilder: (context, index) {
-                      final category = _showcaseCategories[index];
-                      return _CategoryBubble(
+                      final category = _closetCategories[index];
+                      return _CategoryPill(
                         category: category,
                         selected: category.key == _selectedCategoryKey,
                         onTap: () => setState(() {
@@ -108,22 +106,16 @@ class _VirtualClosetPageState extends State<VirtualClosetPage> {
                 ),
                 const SizedBox(height: 14),
                 Text(
-                  _sectionTitle,
+                  '${_selectedCategoryLabel} · ${items.length}件',
                   style: const TextStyle(
-                    fontSize: 30,
+                    fontSize: 22,
                     fontWeight: FontWeight.w800,
-                    color: Color(0xFF262626),
+                    color: Color(0xFF1F1F1F),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 if (items.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.only(top: 40),
-                    child: EmptyState(
-                      title: '暂无单品',
-                      caption: '当前分类下还没有可展示的单品',
-                    ),
-                  )
+                  const _ClosetEmptyState()
                 else
                   GridView.builder(
                     shrinkWrap: true,
@@ -131,9 +123,9 @@ class _VirtualClosetPageState extends State<VirtualClosetPage> {
                     itemCount: items.length,
                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 18,
-                      childAspectRatio: 0.66,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 14,
+                      childAspectRatio: 0.72,
                     ),
                     itemBuilder: (context, index) {
                       final item = items[index];
@@ -212,8 +204,8 @@ class _VirtualClosetPageState extends State<VirtualClosetPage> {
     );
   }
 
-  String get _sectionTitle {
-    return _showcaseCategories
+  String get _selectedCategoryLabel {
+    return _closetCategories
         .firstWhere((category) => category.key == _selectedCategoryKey)
         .label;
   }
@@ -221,58 +213,13 @@ class _VirtualClosetPageState extends State<VirtualClosetPage> {
   List<ClosetItem> _filteredItems() {
     final query = _search.text.trim().toLowerCase();
     final filtered = widget.store.closet.where((item) {
-      if (!_matchesShowcaseCategory(item, _selectedCategoryKey)) return false;
+      if (item.category != _selectedCategoryKey) return false;
       final searchable = '${item.name} ${item.brand} ${item.subCategory}'.toLowerCase();
       if (query.isNotEmpty && !searchable.contains(query)) return false;
       return true;
     }).toList();
     filtered.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return filtered;
-  }
-
-  bool _matchesShowcaseCategory(ClosetItem item, String key) {
-    switch (key) {
-      case 'shirt':
-        return item.category == 'top';
-      case 'pants':
-        return item.category == 'bottom';
-      case 'glasses':
-        return item.category == 'accessory' &&
-            _containsAny(item, const <String>['眼镜', '墨镜', 'glasses', 'sunglass']);
-      case 'shoes':
-        return item.category == 'shoes';
-      case 'watch':
-        return item.category == 'accessory' &&
-            _containsAny(item, const <String>['手表', '腕表', 'watch']);
-      case 'watch_alt':
-        return item.category == 'accessory' &&
-            !_containsAny(item, const <String>['手表', '腕表', 'watch', '眼镜', '墨镜', 'glasses']) &&
-            !_isJewelry(item);
-      default:
-        return false;
-    }
-  }
-
-  bool _containsAny(ClosetItem item, List<String> keywords) {
-    final text = '${item.name} ${item.subCategory} ${item.brand}'.toLowerCase();
-    return keywords.any(text.contains);
-  }
-
-  bool _isJewelry(ClosetItem item) {
-    if (item.category != 'accessory') return false;
-    final text = '${item.subCategory} ${item.name}'.toLowerCase();
-    const keywords = <String>[
-      '项链',
-      '戒指',
-      '耳饰',
-      '耳环',
-      '首饰',
-      '珠宝',
-      '手链',
-      '手镯',
-      '胸针',
-    ];
-    return keywords.any(text.contains);
   }
 }
 
@@ -284,29 +231,30 @@ class _StoreSearchBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 48,
+      height: 44,
       decoration: BoxDecoration(
-        color: const Color(0xFFEAEAEA),
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE5E5E5)),
       ),
       alignment: Alignment.center,
       child: TextField(
         controller: controller,
         decoration: const InputDecoration(
-          hintText: 'Search for products',
-          hintStyle: TextStyle(color: Color(0xFF8D8D8D), fontSize: 17),
+          hintText: '搜索我的单品',
+          hintStyle: TextStyle(color: Color(0xFF9A9A9A), fontSize: 14),
           prefixIcon: Icon(Icons.search, color: Color(0xFF8D8D8D)),
           border: InputBorder.none,
           isDense: true,
-          contentPadding: EdgeInsets.symmetric(vertical: 14),
+          contentPadding: EdgeInsets.symmetric(vertical: 12),
         ),
       ),
     );
   }
 }
 
-class _CategoryBubble extends StatelessWidget {
-  const _CategoryBubble({
+class _CategoryPill extends StatelessWidget {
+  const _CategoryPill({
     required this.category,
     required this.selected,
     required this.onTap,
@@ -318,36 +266,24 @@ class _CategoryBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bubbleColor = selected ? const Color(0xFFE03128) : const Color(0xFFEBC7C7);
-    final iconColor = selected ? Colors.white : const Color(0xFF171717);
+    final bgColor = selected ? const Color(0xFFD32F2F) : const Color(0xFFEBEBEB);
+    final textColor = selected ? Colors.white : const Color(0xFF4F4F4F);
 
     return GestureDetector(
       onTap: onTap,
-      child: SizedBox(
-        width: 56,
-        child: Column(
-          children: [
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: bubbleColor,
-              ),
-              child: Icon(category.icon, color: iconColor, size: 26),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              category.label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: Color(0xFF2A2A2A),
-              ),
-            ),
-          ],
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Text(
+          category.label,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+            color: textColor,
+          ),
         ),
       ),
     );
@@ -370,7 +306,7 @@ class _ProductCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(16),
       onTap: onTap,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -378,9 +314,17 @@ class _ProductCard extends StatelessWidget {
           Expanded(
             child: Container(
               decoration: BoxDecoration(
-                color: const Color(0xFFE6E6E6),
-                borderRadius: BorderRadius.circular(12),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x12000000),
+                    blurRadius: 10,
+                    offset: Offset(0, 4),
+                  ),
+                ],
               ),
+              padding: const EdgeInsets.all(8),
               child: Stack(
                 children: [
                   Positioned.fill(
@@ -389,7 +333,7 @@ class _ProductCard extends StatelessWidget {
                       width: double.infinity,
                       height: double.infinity,
                       fit: BoxFit.cover,
-                      radius: BorderRadius.circular(12),
+                      radius: BorderRadius.circular(16),
                     ),
                   ),
                   Positioned(
@@ -397,10 +341,18 @@ class _ProductCard extends StatelessWidget {
                     top: 8,
                     child: GestureDetector(
                       onTap: onLikeTap,
-                      child: Icon(
-                        liked ? Icons.favorite : Icons.favorite_border,
-                        size: 20,
-                        color: liked ? const Color(0xFFF82E2E) : const Color(0xFF1D1D1D),
+                      child: Container(
+                        width: 28,
+                        height: 28,
+                        decoration: const BoxDecoration(
+                          color: Color(0xEFFFFFFF),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          liked ? Icons.favorite : Icons.favorite_border,
+                          size: 18,
+                          color: liked ? const Color(0xFFD32F2F) : const Color(0xFF444444),
+                        ),
                       ),
                     ),
                   ),
@@ -417,15 +369,61 @@ class _ProductCard extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                fontSize: 16,
+                fontSize: 15,
                 fontWeight: FontWeight.w700,
                 color: Color(0xFF1F1F1F),
-                height: 1.1,
               ),
             ),
           ),
-          const SizedBox(height: 4),
-          const SizedBox.shrink(),
+          const SizedBox(height: 2),
+          SizedBox(
+            width: double.infinity,
+            child: Text(
+              item.brand.trim().isEmpty ? '未设置品牌' : item.brand,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF8A8A8A),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ClosetEmptyState extends StatelessWidget {
+  const _ClosetEmptyState();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 44),
+      child: const Column(
+        children: [
+          Icon(Icons.inventory_2_outlined, size: 42, color: Color(0xFFB0B0B0)),
+          SizedBox(height: 12),
+          Text(
+            '还没有单品',
+            style: TextStyle(
+              color: Color(0xFF2C2C2C),
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          SizedBox(height: 4),
+          Text(
+            '去添加第一件 →',
+            style: TextStyle(
+              color: Color(0xFF8C8C8C),
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
         ],
       ),
     );
